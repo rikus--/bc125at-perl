@@ -6,11 +6,15 @@
 use strict;
 use warnings;
 
+use Getopt::Long 'GetOptionsFromArray';
+
+use FindBin;
+use lib $FindBin::Bin;
+
 use Bc125At::Command;
 use Bc125At::Interactive;
 use Bc125At::Detect;
 use Bc125At::Version;
-use Getopt::Long 'GetOptionsFromArray';
 
 #my $tty = Bc125At::Detect::probe(); # undef ok
 my $scanner = Bc125At::Command->new();
