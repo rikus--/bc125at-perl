@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# Copyright (c) 2013 Rikus Goodell. All Rights Reserved.
+# This software is distributed free of charge and comes with NO WARRANTY.
+
 use strict;
 use warnings;
 

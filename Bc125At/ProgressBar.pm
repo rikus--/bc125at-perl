@@ -1,5 +1,8 @@
 package Bc125At::ProgressBar;
 
+# Copyright (c) 2013 Rikus Goodell. All Rights Reserved.
+# This software is distributed free of charge and comes with NO WARRANTY.
+
 sub new {
     my ($package, @args) = @_;
     my $self = {
