@@ -35,16 +35,34 @@ if ($command eq 'channel') {
           and $filename
           or _usage();
         my $info = $scanner->get_all_channel_info($impatient ? 1 : 0);
-        Bc125At::Command::dumper($filename, $info);
+        Bc125At::Command::dumper($filename, $info, 'channel');
     }
     elsif ($subcommand eq 'write') {    # write to scanner
         _prog();
-        my ($filename, $impatient);
+        my ($filename);
         GetOptionsFromArray(\@args, 'file=s' => \$filename) and $filename
           or _usage();
         $scanner->write_channels($filename);
     }
 
+}
+elsif ($command eq 'search') {
+    _usage() unless $subcommand;
+    if ($subcommand eq 'read') {
+        _prog();
+        my $filename;
+        GetOptionsFromArray(\@args, 'file=s' => \$filename,) and $filename
+          or _usage();
+        my $info = $scanner->get_all_search_group_info();
+        Bc125At::Command::dumper($filename, $info, 'search');
+    }
+    elsif ($subcommand eq 'write') {
+        _prog();
+        my $filename;
+        GetOptionsFromArray(\@args, 'file=s' => \$filename) and $filename
+          or _usage();
+        $scanner->write_search_groups($filename);
+    }
 }
 elsif ($command eq 'interactive') {
     Bc125At::Interactive::run();
@@ -58,7 +76,7 @@ elsif ($command eq 'driver') {
 else { _usage() }
 
 sub _usage {
-    die <<END;
+    print <<END;
 $0 version $Bc125At::Version::version
 
 usage:
@@ -72,7 +90,6 @@ $0 channel read --file freqs.txt [--impatient]
    which have not been set yet (under the assumption that all
    subsequent frequencies will also be zero).
 
-
 $0 channel write --file freqs.txt
 
    Loads the channels defined in freqs.txt and writes them to the
@@ -81,6 +98,16 @@ $0 channel write --file freqs.txt
    in the scanner to be overwritten (hopefully with meaningful
    values, but the author of this software takes no responsibility
    for harm or loss of data that may occur as a result of its use).
+
+$0 search read --file search.txt
+
+   Read the search groups from the scanner into the specified text
+   file.
+
+$0 search write --file search.txt
+
+   Writes the search groups defined in the specified text file to
+   the scanner.
 
 $0 interactive
 
@@ -102,6 +129,7 @@ $0 driver
    the 'usbserial' kernel module and creating a device in /dev.
 
 END
+    exit 1;
 }
 
 sub _prog {

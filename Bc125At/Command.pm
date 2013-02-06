@@ -34,14 +34,20 @@ sub get_channel_info {
     return $channel_info;
 }
 
+sub get_search_group_info {
+    my ($self, $index) = @_;
+    my $search_group_info = _parse_search_group_info($self->{serial}->cmd('CSP,' . $index));
+    return $search_group_info;
+}
+
 sub run_cmds {
     my ($self, $cmds) = @_;
     my $size = @$cmds;
-    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => $size / 20);
+    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max($size / 20, 1));
     my $failed;
     for my $cmd (@$cmds) {
         my $ret = $self->{serial}->cmd($cmd);
-        if ($ret =~ /^ERR/) {
+        if ($ret =~ /^(?:ERR|\w+,NG)/) {
             print "\n\n $ret\n\n";
             $failed++;
         }
@@ -60,7 +66,7 @@ sub get_all_channel_info {
     my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 25);
     for my $n (1 .. 500) {
         my $thischannel = $self->get_channel_info($n);
-        if ($thischannel->{frq} eq '00000000') {
+        if (_freq_is_unset($thischannel->{frq})) {
             last if ++$zeros == 10 && $impatient;
         }
         else {
@@ -73,23 +79,56 @@ sub get_all_channel_info {
     return \@info;
 }
 
+sub get_all_search_group_info {
+    my $self = shift;
+    print "Reading search group info from scanner ...\n";
+    my $progress = Bc125At::ProgressBar->new(max => 10, redisplay => 1);
+    my $info = [
+        map {
+            my $sg = $self->get_search_group_info($_);
+            $progress->more();
+            $sg;
+          } 1 .. 10
+    ];
+    print "Done!\n";
+    return $info;
+}
+
+sub _freq_is_unset {
+    return $_[0] eq '00000000' || $_[0] eq '0.000';
+}
+
 sub _parse_channel_info {
     my $unparsed = shift;    # CIN,400,,00000000,AUTO,0,2,1,0
     my %parsed;
-    @parsed{qw(cmd index name frq mod ctcss_dcs dly lout pri)} = split /,/, $unparsed;
+    @parsed{ _keys('channel') } = split /,/, $unparsed;
     return \%parsed;
+}
+
+sub _parse_search_group_info {
+    my $unparsed = shift;    # CSP,1,01180000,01400000
+    my %parsed;
+    @parsed{ _keys('search') } = split /,/, $unparsed;
+    return \%parsed;
+}
+
+sub _keys {
+    my $type = shift;
+    return qw(cmd index name frq mod ctcss_dcs dly lout pri) if $type eq 'channel';
+    return qw(cmd index frq_l frq_h)                         if $type eq 'search';
+    die;
 }
 
 # Avoid depending on Data::Dumper, and allow more useful formatting
 sub dumper {
-    my ($file, $info) = @_;
+    my ($file, $info, $type) = @_;
     open my $fh, '>', $file or die $!;
     print {$fh} "[\n";
     for my $h (@$info) {
         print {$fh} "    {\n";
-        for my $k (qw(cmd index name frq mod ctcss_dcs dly lout pri)) {
+        for my $k (_keys($type)) {
             my $pad = ' ' x (9 - length($k));
-            my $value = $k eq 'frq' ? _human_freq($h->{$k}) : $h->{$k};
+            my $value = $k =~ m{^frq} ? _human_freq($h->{$k}) : $h->{$k};
             print {$fh} "        $pad$k => '$value',\n";
         }
         print {$fh} "    },\n";
@@ -120,12 +159,30 @@ sub compose_multi_channel_info {
     return \@cmds;
 }
 
+sub compose_multi_search_group_info {
+    my ($info) = @_;
+    my @cmds;
+    for my $h (@$info) {
+        push @cmds, _compose_search_group_info($h);
+    }
+    return \@cmds;
+}
+
 sub write_channels {
     my ($self, $file) = @_;
     my $info = undumper($file);
     _validate_info($info);
     my $cmds = compose_multi_channel_info($info);
     print "Writing channels to scanner ...\n";
+    my ($status, $msg) = $self->run_cmds($cmds);
+    print "Done! $msg\n";
+}
+
+sub write_search_groups {
+    my ($self, $file) = @_;
+    my $info = undumper($file);
+    my $cmds = compose_multi_search_group_info($info);
+    print "Writing search groups to scanner ...\n";
     my ($status, $msg) = $self->run_cmds($cmds);
     print "Done! $msg\n";
 }
@@ -165,17 +222,31 @@ sub _nonhuman_freq {
 sub _compose_channel_info {
     my $parsed   = shift;
     my $massaged = _massage($parsed);
-    my $composed = join ',', @$massaged{qw(cmd index name frq mod ctcss_dcs dly lout pri)};
+    my $composed = join ',', @$massaged{ _keys('channel') };
+    return $composed;
+}
+
+sub _compose_search_group_info {
+    my $parsed   = shift;
+    my $massaged = _massage($parsed);
+    my $composed = join ',', @$massaged{ _keys('search') };
     return $composed;
 }
 
 sub _massage {
     my $parsed   = shift;
     my $massaged = {%$parsed};
-    if ($massaged->{frq} =~ /\./) {
-        $massaged->{frq} = _nonhuman_freq($massaged->{frq});
+    for my $k (keys %$massaged) {
+        if ($k =~ m{^frq} && $massaged->{$k} =~ /\./) {
+            $massaged->{$k} = _nonhuman_freq($massaged->{$k});
+        }
     }
     return $massaged;
+}
+
+sub _max {
+    my ($x, $y) = @_;
+    return $x > $y ? $x : $y;
 }
 
 1;
