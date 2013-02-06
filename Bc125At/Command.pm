@@ -7,10 +7,12 @@ use strict;
 use warnings;
 
 use Bc125At::Serial;
+use Bc125At::ProgressBar;
 
 sub new {
     my $self = {};
     my $ser = Bc125At::Serial->new();
+    $ser->empty_buffer(); # clean out any lingering responses that will interfere with what we want to do
     $self->{serial} = $ser;
     return bless $self;
 }
@@ -27,26 +29,34 @@ sub end_program {
 
 sub get_channel_info {
     my ($self, $index) = @_;
-    return _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
+    my $channel_info = _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
+    _validate_info([$channel_info]);
+    return $channel_info;
 }
 
 sub run_cmds {
     my ($self, $cmds) = @_;
+    my $size = @$cmds;
+    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => $size / 20);
+    my $failed;
     for my $cmd (@$cmds){
-        print "$cmd ...";
         my $ret = $self->{serial}->cmd($cmd);
-        print " $ret\n";
+        if ($ret =~ /^ERR/){
+            print "\n\n $ret\n\n";
+            $failed++;
+	}
+	$progress->more();
     }
+    return $failed ? (0, "$failed / $size commands failed\n") : (1, "All $size operations succeeded");
 }
 
 sub get_all_channel_info {
     my ($self, $impatient) = @_;
     my @info;
     my $zeros;
+    print "Reading channnels from scanner ...\n";
+    my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 25);
     for my $n (1 .. 500){
-        local $| = 1;
-        print STDERR ".";
-        print STDERR "\n" if $n % 50 == 0;
         my $thischannel = $self->get_channel_info($n);
         if ($thischannel->{frq} eq '00000000'){
             last if ++$zeros == 10 && $impatient;
@@ -54,8 +64,10 @@ sub get_all_channel_info {
         else {
             $zeros = 0;
         }
+	$progress->more();
         push @info, $thischannel;
     }
+    print "Done!\n";
     return \@info;
 }
 
@@ -111,12 +123,19 @@ sub write_channels {
     my $info = undumper($file);
     _validate_info($info);
     my $cmds = compose_multi_channel_info($info);
-    $self->run_cmds($cmds);
+    print "Writing channels to scanner ...\n";
+    my ($status, $msg) = $self->run_cmds($cmds);
+    print "Done! $msg\n";
 }
 
 sub _validate_info {
     my $info = shift;
     for my $h (@$info){
+        for my $k (keys %$h){
+		if (!defined $h->{$k}){
+			die "$k is not defined; parsed channel info is corrupt\n";
+		}
+	}
         if (length($h->{name}) > 16){
             die "Name $h->{name} is too long. Max length is 16.\n";
         }

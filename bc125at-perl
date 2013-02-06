@@ -12,6 +12,7 @@ use Bc125At::Detect;
 use Bc125At::Version;
 use Getopt::Long 'GetOptionsFromArray';
 
+#my $tty = Bc125At::Detect::probe(); # undef ok
 my $scanner = Bc125At::Command->new();
 my $prog;
 

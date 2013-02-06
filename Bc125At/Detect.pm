@@ -39,4 +39,10 @@ sub setup_driver {
     warn "Done setting up driver. Hope it works.\n";
 }
 
+#sub probe {
+#    for my $tty (qw(/dev/ttyUSB0 /dev/ttyUSB1)){
+#        #Bc125At::Serial->new(
+#    }
+#}
+
 1;
