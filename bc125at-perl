@@ -22,32 +22,37 @@ _usage() unless $command;
 
 $SIG{INT} = sub { exit };
 
-if ($command eq 'channel'){
+if ($command eq 'channel') {
     _usage() unless $subcommand;
-    if ($subcommand eq 'read'){ # read from scanner
+    if ($subcommand eq 'read') {    # read from scanner
         _prog();
         my ($filename, $impatient);
-        GetOptionsFromArray(\@args, 'file=s' => \$filename, impatient => \$impatient)
-            and $filename or _usage();
+        GetOptionsFromArray(
+            \@args,
+            'file=s'  => \$filename,
+            impatient => \$impatient
+          )
+          and $filename
+          or _usage();
         my $info = $scanner->get_all_channel_info($impatient ? 1 : 0);
         Bc125At::Command::dumper($filename, $info);
     }
-    elsif ($subcommand eq 'write'){ # write to scanner
+    elsif ($subcommand eq 'write') {    # write to scanner
         _prog();
         my ($filename, $impatient);
-        GetOptionsFromArray(\@args, 'file=s' => \$filename)
-            and $filename or _usage();
+        GetOptionsFromArray(\@args, 'file=s' => \$filename) and $filename
+          or _usage();
         $scanner->write_channels($filename);
     }
 
 }
-elsif ($command eq 'interactive'){
+elsif ($command eq 'interactive') {
     Bc125At::Interactive::run();
 }
-elsif ($command eq 'detect'){
+elsif ($command eq 'detect') {
     Bc125At::Detect::detect();
 }
-elsif ($command eq 'driver'){
+elsif ($command eq 'driver') {
     Bc125At::Detect::setup_driver();
 }
 else { _usage() }

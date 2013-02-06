@@ -11,8 +11,8 @@ use Bc125At::ProgressBar;
 
 sub new {
     my $self = {};
-    my $ser = Bc125At::Serial->new();
-    $ser->empty_buffer(); # clean out any lingering responses that will interfere with what we want to do
+    my $ser  = Bc125At::Serial->new();
+    $ser->empty_buffer();    # clean out any lingering responses that will interfere with what we want to do
     $self->{serial} = $ser;
     return bless $self;
 }
@@ -39,15 +39,17 @@ sub run_cmds {
     my $size = @$cmds;
     my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => $size / 20);
     my $failed;
-    for my $cmd (@$cmds){
+    for my $cmd (@$cmds) {
         my $ret = $self->{serial}->cmd($cmd);
-        if ($ret =~ /^ERR/){
+        if ($ret =~ /^ERR/) {
             print "\n\n $ret\n\n";
             $failed++;
-	}
-	$progress->more();
+        }
+        $progress->more();
     }
-    return $failed ? (0, "$failed / $size commands failed\n") : (1, "All $size operations succeeded");
+    return $failed
+      ? (0, "$failed / $size commands failed\n")
+      : (1, "All $size operations succeeded");
 }
 
 sub get_all_channel_info {
@@ -56,15 +58,15 @@ sub get_all_channel_info {
     my $zeros;
     print "Reading channnels from scanner ...\n";
     my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 25);
-    for my $n (1 .. 500){
+    for my $n (1 .. 500) {
         my $thischannel = $self->get_channel_info($n);
-        if ($thischannel->{frq} eq '00000000'){
+        if ($thischannel->{frq} eq '00000000') {
             last if ++$zeros == 10 && $impatient;
         }
         else {
             $zeros = 0;
         }
-	$progress->more();
+        $progress->more();
         push @info, $thischannel;
     }
     print "Done!\n";
@@ -72,20 +74,20 @@ sub get_all_channel_info {
 }
 
 sub _parse_channel_info {
-    my $unparsed = shift; # CIN,400,,00000000,AUTO,0,2,1,0
+    my $unparsed = shift;    # CIN,400,,00000000,AUTO,0,2,1,0
     my %parsed;
     @parsed{qw(cmd index name frq mod ctcss_dcs dly lout pri)} = split /,/, $unparsed;
     return \%parsed;
 }
 
-# Avoid depending on Data::Dumper, and allow more useful formatting 
+# Avoid depending on Data::Dumper, and allow more useful formatting
 sub dumper {
     my ($file, $info) = @_;
     open my $fh, '>', $file or die $!;
     print {$fh} "[\n";
-    for my $h (@$info){
+    for my $h (@$info) {
         print {$fh} "    {\n";
-        for my $k (qw(cmd index name frq mod ctcss_dcs dly lout pri)){
+        for my $k (qw(cmd index name frq mod ctcss_dcs dly lout pri)) {
             my $pad = ' ' x (9 - length($k));
             my $value = $k eq 'frq' ? _human_freq($h->{$k}) : $h->{$k};
             print {$fh} "        $pad$k => '$value',\n";
@@ -96,23 +98,23 @@ sub dumper {
 }
 
 sub undumper {
-        my ($file) = shift;
-        open my $fh, '<', $file or die $!;
-        my $text;
-        {
-            local $/;
-            $text = <$fh>;
-        }
-        close $fh;
-        my $info = eval $text; # XXX insecure, so don't load files from untrusted sources
-        warn $@ and return if $@;
-        return $info;
+    my ($file) = shift;
+    open my $fh, '<', $file or die $!;
+    my $text;
+    {
+        local $/;
+        $text = <$fh>;
+    }
+    close $fh;
+    my $info = eval $text;    # XXX insecure, so don't load files from untrusted sources
+    warn $@ and return if $@;
+    return $info;
 }
 
 sub compose_multi_channel_info {
     my ($info) = @_;
     my @cmds;
-    for my $h (@$info){
+    for my $h (@$info) {
         push @cmds, _compose_channel_info($h);
     }
     return \@cmds;
@@ -130,13 +132,13 @@ sub write_channels {
 
 sub _validate_info {
     my $info = shift;
-    for my $h (@$info){
-        for my $k (keys %$h){
-		if (!defined $h->{$k}){
-			die "$k is not defined; parsed channel info is corrupt\n";
-		}
-	}
-        if (length($h->{name}) > 16){
+    for my $h (@$info) {
+        for my $k (keys %$h) {
+            if (!defined $h->{$k}) {
+                die "$k is not defined; parsed channel info is corrupt\n";
+            }
+        }
+        if (length($h->{name}) > 16) {
             die "Name $h->{name} is too long. Max length is 16.\n";
         }
     }
@@ -144,7 +146,7 @@ sub _validate_info {
 
 sub _human_freq {
     my $freq = shift;
-    if ($freq =~ /^\d{4}\d{4}$/){
+    if ($freq =~ /^\d{4}\d{4}$/) {
         my $fmt = sprintf "%.4f", $freq / 10_000;
         $fmt =~ s/0$//;
         return $fmt;
@@ -154,23 +156,23 @@ sub _human_freq {
 
 sub _nonhuman_freq {
     my $freq = shift;
-    if ($freq =~ /^\d+\.\d+$/){
+    if ($freq =~ /^\d+\.\d+$/) {
         return sprintf "%08d", $freq * 10_000;
     }
     die "input '$freq' was not as expected";
 }
 
 sub _compose_channel_info {
-    my $parsed = shift;
+    my $parsed   = shift;
     my $massaged = _massage($parsed);
     my $composed = join ',', @$massaged{qw(cmd index name frq mod ctcss_dcs dly lout pri)};
     return $composed;
 }
 
 sub _massage {
-    my $parsed = shift;
-    my $massaged = { %$parsed };
-    if ($massaged->{frq} =~ /\./){
+    my $parsed   = shift;
+    my $massaged = {%$parsed};
+    if ($massaged->{frq} =~ /\./) {
         $massaged->{frq} = _nonhuman_freq($massaged->{frq});
     }
     return $massaged;
