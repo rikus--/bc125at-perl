@@ -14,11 +14,8 @@ if ($@) {
     warn "IO::Select is not available. That's odd.\n";
 }
 
-# Device::SerialPort is actually not necessary, and using a plain filehandle actually
-# works more smoothly overall, so Device::SerialPort will not be used by default.
+# Device::SerialPort is actually not necessary, but it can help with some things.
 my $using_device_serialport = eval {
-    return
-      if $have_io_select && !$ENV{'USE_DEVICE_SERIALPORT'};
     require Device::SerialPort;
     1;
 };
