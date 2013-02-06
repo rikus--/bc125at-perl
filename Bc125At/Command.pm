@@ -87,8 +87,8 @@ sub dumper {
         print {$fh} "    {\n";
         for my $k (qw(cmd index name frq mod ctcss_dcs dly lout pri)){
             my $pad = ' ' x (9 - length($k));
-            my $addl = $k eq 'frq' ? ' # ' . _human_freq($h->{$k}) : '';
-            print {$fh} "        $pad$k => '$h->{$k}',$addl\n";
+            my $value = $k eq 'frq' ? _human_freq($h->{$k}) : $h->{$k};
+            print {$fh} "        $pad$k => '$value',\n";
         }
         print {$fh} "    },\n";
     }
@@ -149,13 +149,31 @@ sub _human_freq {
         $fmt =~ s/0$//;
         return $fmt;
     }
-    return;
+    die "input '$freq' was not as expected";
+}
+
+sub _nonhuman_freq {
+    my $freq = shift;
+    if ($freq =~ /^\d+\.\d+$/){
+        return sprintf "%08d", $freq * 10_000;
+    }
+    die "input '$freq' was not as expected";
 }
 
 sub _compose_channel_info {
     my $parsed = shift;
-    my $composed = join ',', @$parsed{qw(cmd index name frq mod ctcss_dcs dly lout pri)};
+    my $massaged = _massage($parsed);
+    my $composed = join ',', @$massaged{qw(cmd index name frq mod ctcss_dcs dly lout pri)};
     return $composed;
+}
+
+sub _massage {
+    my $parsed = shift;
+    my $massaged = { %$parsed };
+    if ($massaged->{frq} =~ /\./){
+        $massaged->{frq} = _nonhuman_freq($massaged->{frq});
+    }
+    return $massaged;
 }
 
 1;
