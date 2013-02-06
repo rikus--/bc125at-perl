@@ -1,5 +1,9 @@
 2013-02-06
 
+- Bump version to 0.2.1
+- Bug fix: Prefer Device::SerialPort if available
+- Bug fix: Only set up serial port connection if needed
+
 - Bump version to 0.2
 - Use FindBin to ensure correct path appears in @INC
 - Implement search group reading and writing
@@ -8,8 +12,6 @@
 conversion
 - Add progress bars, stop depending on Device::SerialPort, do additional
 validation
-
-2013-02-06
 
 - Initial implementation with support for reading and writing channels (among
 other things)
