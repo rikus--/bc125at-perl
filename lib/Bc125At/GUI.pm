@@ -63,24 +63,37 @@ sub _setup_widgets {
 
     $vbox->add($hbox);
 
-    my $table = Gtk2::Table->new(500, 8, 1);
+    my $table = Gtk2::Table->new(501, 8, 1);
 
     $scroll->add_with_viewport($table);
 
-    $scroll->set_size_request(640,480);
+    $scroll->set_size_request(720,600);
 
+
+my @head = qw(name frq mod ctcss_dcs dly lout pri);
 
 my @entries;
 
-for my $row (0 .. 499){
+for my $row (-1 .. 499){
+if ($row >= 0){
 my $label = Gtk2::Label->new($row + 1);
-$table->attach_defaults($label, 0, 1, 0 + $row, 1 + $row);
+$table->attach_defaults($label, 0, 1, 1 + $row, 2 + $row);
+}
 for my $col (0 .. 6){
-$entries[$row][$col] = Gtk2::Entry->new();
-$entries[$row][$col]->set_size_request(50,25);
+
+my $widget;
+
+if ($row == -1){
+$widget = Gtk2::Label->new($head[$col]);
+}
+else {
+$entries[$row][$col] = $widget = Gtk2::Entry->new();
+}
+$widget->set_size_request(50,25);
+
 my $width = $col == 0 ? 2 : 1;
 my $hoff = $col == 0 ? 0 : 1;
-$table->attach_defaults($entries[$row][$col], $hoff + 1 + $col, $hoff + $width + 1 + $col, 0 + $row, 1 + $row);
+$table->attach_defaults($widget, $hoff + 1 + $col, $hoff + $width + 1 + $col, 1 + $row, 2 + $row);
 }
 }
 

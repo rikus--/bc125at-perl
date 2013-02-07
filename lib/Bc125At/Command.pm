@@ -127,6 +127,7 @@ sub get_all_channel_info {
         else {
             $zeros = 0;
         }
+        $thischannel->{frq} = _human_freq($thischannel->{frq});
         $progress->more();
         push @info, $thischannel;
     }
@@ -191,8 +192,7 @@ sub dumper {
         print {$fh} "    {\n";
         for my $k (_keys($type)) {
             my $pad = ' ' x (9 - length($k));
-            my $value = $k =~ m{^frq} ? _human_freq($h->{$k}) : $h->{$k};
-            print {$fh} "        $pad$k => '$value',\n";
+            print {$fh} "        $pad$k => '$h->{$k}',\n";
         }
         print {$fh} "    },\n";
     }
