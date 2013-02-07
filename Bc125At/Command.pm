@@ -11,7 +11,22 @@ use Bc125At::ProgressBar;
 
 sub new {
     my $self = {};
-    my $ser  = Bc125At::Serial->new();
+    my $ser  = eval { Bc125At::Serial->new() };
+    if (chomp(my $err = $@)){
+        die <<END;
+Could not open serial port connection to scanner: $err
+
+If you haven't already, try running
+
+  bc125at-perl driver
+
+(must be done as root)
+
+Also, make sure the device in /dev (likely /dev/ttyUSB0) is
+readable/writable by the user you are running bc125at-perl as.
+
+END
+    }
     $ser->empty_buffer();    # clean out any lingering responses that will interfere with what we want to do
     $self->{serial} = $ser;
     return bless $self;
@@ -43,7 +58,7 @@ sub get_search_group_info {
 sub run_cmds {
     my ($self, $cmds) = @_;
     my $size = @$cmds;
-    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max($size / 20, 1));
+    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max(int($size / 40), 1));
     my $failed;
     for my $cmd (@$cmds) {
         my $ret = $self->{serial}->cmd($cmd);
@@ -63,7 +78,7 @@ sub get_all_channel_info {
     my @info;
     my $zeros;
     print "Reading channnels from scanner ...\n";
-    my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 25);
+    my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 12);
     for my $n (1 .. 500) {
         my $thischannel = $self->get_channel_info($n);
         if (_freq_is_unset($thischannel->{frq})) {
