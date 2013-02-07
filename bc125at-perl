@@ -9,7 +9,7 @@ use warnings;
 use Getopt::Long 'GetOptionsFromArray';
 
 use FindBin;
-use lib $FindBin::Bin;
+use lib "$FindBin::Bin/lib";
 
 use Bc125At::Command;
 use Bc125At::Interactive;
@@ -71,7 +71,6 @@ elsif ($command eq 'search') {
     }
 }
 elsif ($command eq 'interactive') {
-    $scanner = Bc125At::Command->new();
     Bc125At::Interactive::run();
 }
 elsif ($command eq 'detect') {
@@ -79,6 +78,13 @@ elsif ($command eq 'detect') {
 }
 elsif ($command eq 'driver') {
     Bc125At::Detect::setup_driver();
+}
+elsif ($command eq 'gui') {
+    $scanner = Bc125At::Command->new();
+    _prog();
+    require Bc125At::GUI;
+    my $gui = Bc125At::GUI->new($scanner);
+    $gui->main;
 }
 else { _usage() }
 
@@ -177,4 +183,9 @@ bc125at-perl driver
 
    Attempt to set up the driver for the device. This involves loading
    the 'usbserial' kernel module and creating a device in /dev.
+
+bc125at-perl gui
+
+   Load the crude, experimental, and incomplete GUI which may currently
+   be used only for reading from and writing directly to the scanner.
 

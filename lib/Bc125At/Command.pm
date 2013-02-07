@@ -244,8 +244,10 @@ get_all_channel_info.)
 =cut
 
 sub write_channels {
-    my ($self, $file) = @_;
-    my $info = undumper($file);
+    my ($self, $file, $info) = @_;
+    if (!$info){
+        $info = undumper($file);
+    }
     _validate_info($info);
     my $cmds = compose_multi_channel_info($info);
     print "Writing channels to scanner ...\n";
