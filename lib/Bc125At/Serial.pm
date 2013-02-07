@@ -38,6 +38,7 @@ sub new {
         $device->parity('none');
         $device->databits(8);
         $device->stopbits(2);
+        $device->are_match("\r");
     }
     else {
         require IO::Handle;
@@ -54,6 +55,7 @@ sub new {
 sub write_cmd {
     my ($self, $cmd) = @_;
     if ($using_device_serialport) {
+        $self->{device}->lookclear;
         $self->{device}->write($cmd . "\r") or return;
     }
     else {
@@ -65,9 +67,17 @@ sub write_cmd {
 
 sub read_response {
     my $self = shift;
-    my ($rdsize, $buf);
+    my ($rdsize, $buf) = (undef, '');
     if ($using_device_serialport) {
-        ($rdsize, $buf) = $self->{device}->read(4096);
+#select undef, undef, undef, 0.015;
+         for (1 .. 50){
+            #($rdsize, $buf) = $self->{device}->read(4096);
+            $buf = $self->{device}->lookfor;
+            if ($buf) { last } 
+            elsif (defined $buf && !$buf){
+                select undef, undef, undef, 0.001;
+            }
+         }
     }
     else {
         local $/ = "\r";
@@ -80,9 +90,6 @@ sub read_response {
 sub cmd {
     my ($self, $cmd) = @_;
     $self->write_cmd($cmd) or die $!;
-    if ($using_device_serialport) {
-        select undef, undef, undef, 0.05;    # failing to wait results in out of sync reads
-    }
     my $buf = $self->read_response();
     return $buf;
 }
