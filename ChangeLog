@@ -1,5 +1,11 @@
+2013-02-07
+
+- Version 0.3
+- Initial implementation of GUI with read/write functionality
+
 2013-02-06
 
+- Version 0.2.2
 - Use MakeMaker for installation, and greatly improve documentation
 - Give more helpful instructions when serial port can't be opened,
 and adjust progress bars
