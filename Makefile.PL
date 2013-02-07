@@ -8,6 +8,6 @@ use Bc125At::Version;
 WriteMakefile(
     NAME      => 'Bc125At',
     VERSION   => $Bc125At::Version::version,
-    PMLIBDIRS => ['Bc125At'],
+    PMLIBDIRS => ['lib'],
     EXE_FILES => ['bc125at-perl'],
 );
