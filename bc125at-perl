@@ -83,59 +83,13 @@ elsif ($command eq 'driver') {
 else { _usage() }
 
 sub _usage {
-    print <<END;
-$0 version $Bc125At::Version::version
+    print "bc125at-perl version $Bc125At::Version::version\n\n";
 
-usage:
-
-$0 channel read --file freqs.txt [--impatient]
-
-   Loads the channels currently stored in the scanner into the
-   specified file, which may be edited and then reloaded into the
-   scanner. The --impatient option may be used if you want to stop
-   trying to load as soon as you hit several frequencies in a row
-   which have not been set yet (under the assumption that all
-   subsequent frequencies will also be zero).
-
-$0 channel write --file freqs.txt
-
-   Loads the channels defined in freqs.txt and writes them to the
-   scanner. WARNING: This is a destructive operation! In other
-   words, doing this will cause your existing channels defined
-   in the scanner to be overwritten (hopefully with meaningful
-   values, but the author of this software takes no responsibility
-   for harm or loss of data that may occur as a result of its use).
-
-$0 search read --file search.txt
-
-   Read the search groups from the scanner into the specified text
-   file.
-
-$0 search write --file search.txt
-
-   Writes the search groups defined in the specified text file to
-   the scanner.
-
-$0 interactive
-
-   Start an interactive session through which commands may be sent
-   to the scanner. As of Feb 2013, this document is available from
-   Uniden as a reference:
-   http://info.uniden.com/twiki/pub/UnidenMan4/BC125AT/BC125AT_PC_Protocol_V1.01.pdf
-
-$0 detect
-
-   Check to see if a compatible device is attached. If this fails,
-   then you're not going to have much luck doing anything else.
-   Note that this is a passive action and doesn't load the driver.
-   If you want to load the driver, use the 'driver' command.
-
-$0 driver
-
-   Attempt to set up the driver for the device. This involves loading
-   the 'usbserial' kernel module and creating a device in /dev.
-
-END
+    my $usage;
+    while(<DATA>){
+        print if $usage;
+        print "usage:\n" and ++$usage if /^=head1 COMMANDS/;
+    }
     exit 1;
 }
 
@@ -147,3 +101,80 @@ sub _prog {
 END {
     $scanner->end_program() if $prog;
 }
+
+__DATA__
+
+=head1 NAME
+
+bc125at-perl
+
+=head1 DESCRIPTION
+
+A tool for programming the Uniden BC125AT scanner on Linux.
+Currently supports a limited subset of the complete set
+of available commands, but enough to get the most important
+things done.
+
+=head1 GETTING STARTED
+
+Connect the scanner using the USB cable. In order to get the
+/dev/ttyUSB0 device set up, run as root:
+
+   bc125at-perl driver
+
+If this succeeds, you should now have a /dev/ttyUSB0 device
+that is set up to point to the correct USB device and emulate
+a traditional serial port, allowing the commands below to be used.
+If you want to run bc125at-perl as a non-root user, you will need
+to manually adjust the permissions of /dev/ttyUSB0 to be readable
+and writable by the user you want to use.
+
+=head1 COMMANDS
+
+bc125at-perl channel read --file freqs.txt [--impatient]
+
+   Loads the channels currently stored in the scanner into the
+   specified file, which may be edited and then reloaded into the
+   scanner. The --impatient option may be used if you want to stop
+   trying to load as soon as you hit several frequencies in a row
+   which have not been set yet (under the assumption that all
+   subsequent frequencies will also be zero).
+
+bc125at-perl channel write --file freqs.txt
+
+   Loads the channels defined in freqs.txt and writes them to the
+   scanner. WARNING: This is a destructive operation! In other
+   words, doing this will cause your existing channels defined
+   in the scanner to be overwritten (hopefully with meaningful
+   values, but the author of this software takes no responsibility
+   for harm or loss of data that may occur as a result of its use).
+
+bc125at-perl search read --file search.txt
+
+   Read the search groups from the scanner into the specified text
+   file.
+
+bc125at-perl search write --file search.txt
+
+   Writes the search groups defined in the specified text file to
+   the scanner.
+
+bc125at-perl interactive
+
+   Start an interactive session through which commands may be sent
+   to the scanner. As of Feb 2013, this document is available from
+   Uniden as a reference:
+   http://info.uniden.com/twiki/pub/UnidenMan4/BC125AT/BC125AT_PC_Protocol_V1.01.pdf
+
+bc125at-perl detect
+
+   Check to see if a compatible device is attached. If this fails,
+   then you're not going to have much luck doing anything else.
+   Note that this is a passive action and doesn't load the driver.
+   If you want to load the driver, use the 'driver' command.
+
+bc125at-perl driver
+
+   Attempt to set up the driver for the device. This involves loading
+   the 'usbserial' kernel module and creating a device in /dev.
+

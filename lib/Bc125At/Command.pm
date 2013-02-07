@@ -9,6 +9,23 @@ use warnings;
 use Bc125At::Serial;
 use Bc125At::ProgressBar;
 
+=head1 NAME
+
+Bc125At::Command
+
+=head1 SYNOPSIS
+
+my $scanner = Bc125At::Command->new();
+
+$scanner->...
+
+=head1 DOCUMENTED INTERFACE
+
+These are the documented methods that may be used. There are also various
+helper functions that I don't think are currently worth documenting.
+
+=cut
+
 sub new {
     my $self = {};
     my $ser  = eval { Bc125At::Serial->new() };
@@ -32,10 +49,22 @@ END
     return bless $self;
 }
 
+=head2 $scanner->begin_program()
+
+Put the scanner into program mode.
+
+=cut
+
 sub begin_program {
     my ($self, $index) = @_;
     $self->{serial}->cmd('PRG');
 }
+
+=head2 $scanner->end_program()
+
+Take the scanner out of program mode.
+
+=cut
 
 sub end_program {
     my ($self, $index) = @_;
@@ -73,6 +102,17 @@ sub run_cmds {
       : (1, "All $size operations succeeded");
 }
 
+=head2 $scanner->get_all_channel_info()
+
+Query the scanner for the complete list of channels.
+Returns an array ref of 500 hash refs each of which
+describes one channel.
+
+Optional boolean parameter may be set to enable
+"impatient" mode.
+
+=cut
+
 sub get_all_channel_info {
     my ($self, $impatient) = @_;
     my @info;
@@ -93,6 +133,14 @@ sub get_all_channel_info {
     print "Done!\n";
     return \@info;
 }
+
+=head2 $scanner->get_all_search_group_info()
+
+Query the scanner for the complete list of all search groups.
+Returns an array ref of 10 hash refs, each of which describes
+one search group.
+
+=cut
 
 sub get_all_search_group_info {
     my $self = shift;
@@ -183,6 +231,18 @@ sub compose_multi_search_group_info {
     return \@cmds;
 }
 
+=head2 $scanner->write_channels('filename.txt')
+
+Reads the specified file containing channel information
+and writes the channels to the scanner. The file must
+contain a serialized representation of the same type of
+data structure returned by $scanner->get_all_channel_info().
+(The easiest way to construct proper input for
+write_channels is to get some sample output from
+get_all_channel_info.)
+
+=cut
+
 sub write_channels {
     my ($self, $file) = @_;
     my $info = undumper($file);
@@ -192,6 +252,15 @@ sub write_channels {
     my ($status, $msg) = $self->run_cmds($cmds);
     print "Done! $msg\n";
 }
+
+=head2 $scanner->write_search_groups('filename.txt');
+
+Reads the specified file containing search group information
+and writes the search groups to the scanner. The file must
+contain a serialized representation of the same type of data
+structure returned by $scanner->get_all_search_group_info().
+
+=cut
 
 sub write_search_groups {
     my ($self, $file) = @_;

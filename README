@@ -2,6 +2,17 @@ This software package (bc125at-perl)
 Copyright (c) 2013 Rikus Goodell. All rights reserved.
 This software is distributed free of charge and comes with NO WARRANTY.
 
+-------------------------------------------------------------------------
+
+Getting started:
+
+  perl Makefile.PL
+  make
+  make install
+  perldoc bc125at-perl
+
+-------------------------------------------------------------------------
+
 Uniden(R) is a registered trademark of Uniden America Corporation.
 
 I am not affiliated with Uniden in any way, nor should my use of their
