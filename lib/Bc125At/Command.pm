@@ -73,9 +73,19 @@ sub end_program {
 
 sub get_channel_info {
     my ($self, $index) = @_;
-    my $channel_info = _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
-    _validate_info([$channel_info]);
-    return $channel_info;
+    for my $try ( 1 .. 3 ){
+        my $channel_info = eval {
+            my $ci = _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
+            _validate_info([$ci]);
+            $ci;
+        };
+        if ($@){
+            warn "\nchannel $index try 1/3: $@\n";
+            next;
+        }
+        return $channel_info;
+    }
+    die "\nGave up on channel $index after 3 tries\n";
 }
 
 sub get_search_group_info {
