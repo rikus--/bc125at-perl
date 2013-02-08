@@ -81,7 +81,7 @@ elsif ($command eq 'driver') {
 }
 elsif ($command eq 'gui') {
     $scanner = Bc125At::Command->new();
-    _prog();
+    $prog = 1; # send extra EPG on exit, just in case
     require Bc125At::GUI;
     my $gui = Bc125At::GUI->new($scanner);
     $gui->main;

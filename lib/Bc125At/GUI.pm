@@ -47,13 +47,17 @@ sub _setup_widgets {
         _button(
             "Read from scanner",
             sub {
+                $self->{scanner}->begin_program;
                 $self->populate_table($self->{scanner}->get_all_channel_info());
+                $self->{scanner}->end_program;
             }
         ),
         _button(
             "Write to scanner",
             sub {
+                $self->{scanner}->begin_program;
                 $self->{scanner}->write_channels(undef, $self->harvest_table());
+                $self->{scanner}->end_program;
             }
         ),
         _button(
