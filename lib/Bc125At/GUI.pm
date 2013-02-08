@@ -55,6 +55,7 @@ sub _setup_widgets {
         _button(
             "Write to scanner",
             sub {
+                $self->_confirm_dialog || return;
                 $self->{scanner}->begin_program;
                 $self->{scanner}->write_channels(undef, $self->harvest_table());
                 $self->{scanner}->end_program;
@@ -186,6 +187,21 @@ sub _save_dialog {
     my $resp = $save->run;
     $save->hide;
     return $save->get_filename if $resp =~ /accept/i;
+    return;
+}
+
+sub _confirm_dialog {
+    my $self = shift;
+    no strict;
+    my $confirm = Gtk2::Dialog->new("Confirm", $self->{window}, GTK_DIALOG_MODAL);
+    for (['Cancel', GTK_RESPONSE_CANCEL], ['Yes, write channels to scanner', GTK_RESPONSE_OK]){
+        my ($text, $response_type) = @$_;
+        $confirm->add_button($text, $response_type);
+    }
+    $confirm->show;
+    my $resp = $confirm->run;
+    $confirm->hide;
+    return 1 if $resp =~ /^ok/i;
     return;
 }
 
