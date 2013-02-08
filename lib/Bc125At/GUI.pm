@@ -108,7 +108,7 @@ sub _setup_widgets {
                 $widget = Gtk2::Label->new($head[$col]);
             }
             else {
-                $entries[$row][$col] = $widget = Gtk2::Entry->new();
+                $entries[$row][$col] = $widget = Gtk2::Entry->new_with_max_length(16);
             }
             $widget->set_size_request(50, 25);
 
