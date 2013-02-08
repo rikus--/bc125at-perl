@@ -1,5 +1,14 @@
 2013-02-07
 
+- Version 0.4
+- Confirmation dialog before writing to scanner
+- Limit channel name to 16 characters in GUI
+- When in GUI, only keep the scanner in program mode when necessary
+- Implement load/save file feature in GUI
+- perltidy everything
+- Recover from certain read errors by retrying
+- Speed up Device::SerialPort I/O significantly by using are_match
+- Add headers to table and use human-readable frequencies (GUI)
 - Version 0.3
 - Initial implementation of GUI with read/write functionality
 
