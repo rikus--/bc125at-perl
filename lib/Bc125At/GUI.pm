@@ -55,6 +55,24 @@ sub _setup_widgets {
             sub {
                 $self->{scanner}->write_channels(undef, $self->harvest_table());
             }
+        ),
+        _button(
+            "Load file...",
+            sub {
+                my $filename = $self->_load_dialog() || return;
+                my $info = Bc125At::Command::undumper($filename) || die;
+                $self->populate_table($info);
+                print "Loaded channels from $filename\n";
+            }
+        ),
+        _button(
+            "Save file...",
+            sub {
+                my $filename = $self->_save_dialog() || return;
+                my $info = $self->harvest_table();
+                Bc125At::Command::dumper($filename, $info, 'channel');
+                print "Saved channels to $filename\n";
+            }
         )
       )
     {
@@ -143,6 +161,28 @@ sub _harvest_row {
     my $rowinfo = {};
     @$rowinfo{qw(cmd index name frq mod ctcss_dcs dly lout pri)} = @ri;
     return $rowinfo;
+}
+
+sub _load_dialog {
+    my $self = shift;
+    no strict;
+    my $open = Gtk2::FileChooserDialog->new("Load channels", $self->{window}, GTK_FILE_CHOOSER_ACTION_OPEN, 'Cancel', GTK_RESPONSE_CANCEL, 'Open', GTK_RESPONSE_ACCEPT);
+    $open->show;
+    my $resp = $open->run;
+    $open->hide;
+    return $open->get_filename if $resp =~ /accept/i;
+    return;
+}
+
+sub _save_dialog {
+    my $self = shift;
+    no strict;
+    my $save = Gtk2::FileChooserDialog->new("Save channels", $self->{window}, GTK_FILE_CHOOSER_ACTION_SAVE, 'Cancel', GTK_RESPONSE_CANCEL, 'Save', GTK_RESPONSE_ACCEPT);
+    $save->show;
+    my $resp = $save->run;
+    $save->hide;
+    return $save->get_filename if $resp =~ /accept/i;
+    return;
 }
 
 1;
