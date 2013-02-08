@@ -8,6 +8,7 @@ lib/Bc125At/Interactive.pm
 lib/Bc125At/ProgressBar.pm
 lib/Bc125At/Serial.pm
 lib/Bc125At/Version.pm
+LICENSE
 Makefile.PL
 MANIFEST
 README
