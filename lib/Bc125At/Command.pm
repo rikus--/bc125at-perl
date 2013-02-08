@@ -28,8 +28,8 @@ helper functions that I don't think are currently worth documenting.
 
 sub new {
     my $self = {};
-    my $ser  = eval { Bc125At::Serial->new() };
-    if (chomp(my $err = $@)){
+    my $ser = eval { Bc125At::Serial->new() };
+    if (chomp(my $err = $@)) {
         die <<END;
 Could not open serial port connection to scanner: $err
 
@@ -73,13 +73,13 @@ sub end_program {
 
 sub get_channel_info {
     my ($self, $index) = @_;
-    for my $try ( 1 .. 3 ){
+    for my $try (1 .. 3) {
         my $channel_info = eval {
             my $ci = _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
             _validate_info([$ci]);
             $ci;
         };
-        if ($@){
+        if ($@) {
             warn "\nchannel $index try 1/3: $@\n";
             next;
         }
@@ -255,7 +255,7 @@ get_all_channel_info.)
 
 sub write_channels {
     my ($self, $file, $info) = @_;
-    if (!$info){
+    if (!$info) {
         $info = undumper($file);
     }
     _validate_info($info);

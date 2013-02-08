@@ -92,7 +92,7 @@ sub _usage {
     print "bc125at-perl version $Bc125At::Version::version\n\n";
 
     my $usage;
-    while(<DATA>){
+    while (<DATA>) {
         print if $usage;
         print "usage:\n" and ++$usage if /^=head1 COMMANDS/;
     }

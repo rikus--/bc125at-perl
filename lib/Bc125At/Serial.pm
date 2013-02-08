@@ -69,15 +69,17 @@ sub read_response {
     my $self = shift;
     my ($rdsize, $buf) = (undef, '');
     if ($using_device_serialport) {
-#select undef, undef, undef, 0.015;
-         for (1 .. 50){
+
+        #select undef, undef, undef, 0.015;
+        for (1 .. 50) {
+
             #($rdsize, $buf) = $self->{device}->read(4096);
             $buf = $self->{device}->lookfor;
-            if ($buf) { last } 
-            elsif (defined $buf && !$buf){
+            if ($buf) { last }
+            elsif (defined $buf && !$buf) {
                 select undef, undef, undef, 0.001;
             }
-         }
+        }
     }
     else {
         local $/ = "\r";
