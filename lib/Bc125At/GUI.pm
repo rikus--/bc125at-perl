@@ -63,6 +63,9 @@ sub _setup_widgets {
 
     $window->signal_connect(destroy => sub { Gtk2->main_quit });
 
+    # This window has a lot of widgets in it, so resizing is likely to be horribly sluggish.
+    $window->set_resizable(0);
+
     my $scroll = Gtk2::ScrolledWindow->new(Gtk2::Adjustment->new(400, 200, 800, 1, 1, 50));
 
     my $vbox = Gtk2::VBox->new(0);
