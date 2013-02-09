@@ -27,6 +27,7 @@ use warnings;
 
 use Bc125At::Command;
 use Bc125At::GUI::ProgressWindow;
+use Bc125At::GUI::ErrorDialog;
 
 BEGIN {
     eval {
@@ -80,10 +81,16 @@ sub _setup_widgets {
             "Read from scanner",
             sub {
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Reading from scanner...", $self->{window});
-                $self->{scanner}->begin_program;
-                $self->populate_table($self->{scanner}->get_all_channel_info(undef, sub { $progress_window->set(@_) }));
-                $self->{scanner}->end_program;
+                eval {
+                    $self->{scanner}->begin_program;
+                    $self->populate_table($self->{scanner}->get_all_channel_info(undef, sub { $progress_window->set(@_) }));
+                    $self->{scanner}->end_program;
+                };
+                my $err = $@;
                 $progress_window->done;
+                if ($err){
+                    Bc125At::GUI::ErrorDialog->new('Error while reading from scanner', $err, $self->{window})->main;
+                }
             }
         ),
         _button(
@@ -91,10 +98,16 @@ sub _setup_widgets {
             sub {
                 $self->_confirm_dialog || return;
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Writing to scanner...", $self->{window});
-                $self->{scanner}->begin_program;
-                $self->{scanner}->write_channels(undef, $self->harvest_table(), sub { $progress_window->set(@_) });
-                $self->{scanner}->end_program;
+                eval {
+                    $self->{scanner}->begin_program;
+                    $self->{scanner}->write_channels(undef, $self->harvest_table(), sub { $progress_window->set(@_) });
+                    $self->{scanner}->end_program;
+                };
+                my $err = $@;
                 $progress_window->done;
+                if ($err){
+                    Bc125At::GUI::ErrorDialog->new('Error while writing to scanner', $err, $self->{window})->main;
+                }
             }
         ),
         _button(
