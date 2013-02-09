@@ -25,8 +25,6 @@ package Bc125At::GUI::ProgressWindow;
 use strict;
 use warnings;
 
-#BEGIN { die if !exists($INC{'Gtk2.pm'}) }
-
 use Gtk2;
 
 use base 'Gtk2::Dialog';
@@ -37,8 +35,6 @@ sub new {
         no strict;
         Gtk2::Dialog->new($title, $parent, GTK_DIALOG_MODAL);
     };
-    $self->{value} = 0;
-    $self->{max} = 100;
     $self->{progressbar} = Gtk2::ProgressBar->new();
     $self->{progressbar}->set_size_request(300,30);
     $self->get_content_area->add($self->{progressbar});

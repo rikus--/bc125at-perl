@@ -25,8 +25,6 @@ package Bc125At::GUI::ErrorDialog;
 use strict;
 use warnings;
 
-#BEGIN { die if !exists($INC{'Gtk2.pm'}) }
-
 use Gtk2;
 
 use base 'Gtk2::Dialog';

@@ -281,6 +281,7 @@ sub write_channels {
     my $cmds = compose_multi_channel_info($info);
     print "Writing channels to scanner ...\n";
     my ($status, $msg) = $self->run_cmds($cmds, $progress_callback);
+    die $msg if !$status;
     print "Done! $msg\n";
 }
 
