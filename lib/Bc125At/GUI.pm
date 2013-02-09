@@ -66,7 +66,11 @@ sub _setup_widgets {
     # This window has a lot of widgets in it, so resizing is likely to be horribly sluggish.
     $window->set_resizable(0);
 
-    my $scroll = Gtk2::ScrolledWindow->new(Gtk2::Adjustment->new(400, 200, 800, 1, 1, 50));
+    my $scroll = Gtk2::ScrolledWindow->new();
+    {
+        no strict 'subs';
+        $scroll->set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    }
 
     my $vbox = Gtk2::VBox->new(0);
     my $hbox = Gtk2::HBox->new();
