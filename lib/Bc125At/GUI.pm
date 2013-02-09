@@ -1,19 +1,19 @@
 package Bc125At::GUI;
 
 # Copyright (c) 2013, Rikus Goodell.
-# 
+#
 # All rights reserved.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
 # the rights to use, copy, modify, merge, publish, distribute, sublicense,
 # and/or sell copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -79,7 +79,7 @@ sub _setup_widgets {
     my $hbox = Gtk2::HBox->new();
 
     for (
-        _button( 'About...', sub { Bc125At::GUI::AboutDialog::show_about_box($self->{window}) } ),
+        _button('About...', sub { Bc125At::GUI::AboutDialog::show_about_box($self->{window}) }),
         _button(
             "Read from scanner",
             sub {
@@ -91,7 +91,7 @@ sub _setup_widgets {
                 };
                 my $err = $@;
                 $progress_window->done;
-                if ($err){
+                if ($err) {
                     Bc125At::GUI::ErrorDialog->new('Error while reading from scanner', $err, $self->{window})->main;
                 }
             }
@@ -108,7 +108,7 @@ sub _setup_widgets {
                 };
                 my $err = $@;
                 $progress_window->done;
-                if ($err){
+                if ($err) {
                     Bc125At::GUI::ErrorDialog->new('Error while writing to scanner', $err, $self->{window})->main;
                 }
             }
@@ -159,17 +159,21 @@ sub _setup_widgets {
     my @entries;
 
     my $splash_label = Gtk2::Label->new(
-<<END
+        <<END
 bc125at-perl
 Copyright (c) 2013, Rikus Goodell.
 
 building interface...
 END
-);
+    );
     $splash_label->set_justify('center');
-    $self->{splash} = Bc125At::GUI::ProgressWindow->new('bc125at-perl', $self->{window}, sub {
-        $_[0]->get_content_area->add($splash_label)
-    });
+    $self->{splash} = Bc125At::GUI::ProgressWindow->new(
+        'bc125at-perl',
+        $self->{window},
+        sub {
+            $_[0]->get_content_area->add($splash_label);
+        }
+    );
     for my $row (-1 .. 499) {
         if ($row >= 0) {
             my $label = Gtk2::Label->new($row + 1);
@@ -182,7 +186,7 @@ END
             if ($row == -1) {
                 $widget = Gtk2::Label->new($head[$col]);
             }
-            elsif ($head[$col] eq 'lout'){
+            elsif ($head[$col] eq 'lout') {
                 $entries[$row][$col] = $widget = Gtk2::CheckButton->new_with_label('L/O');
             }
             else {
@@ -194,9 +198,10 @@ END
             my $hoff  = $col == 0 ? 0 : 1;
             $table->attach_defaults($widget, $hoff + 1 + $col, $hoff + $width + 1 + $col, 1 + $row, 2 + $row);
             $widget->show;
-            $self->{splash}->set(($row+2), 501);
+            $self->{splash}->set(($row + 2), 501);
         }
     }
+
     # splash window is cleaned up in main
 
     $vbox->add($scroll);
@@ -223,7 +228,7 @@ sub _populate_row {
     my ($row_widgets, $rowinfo) = @_;
     my @ri = @$rowinfo{qw(name frq mod ctcss_dcs dly lout pri)};
     for my $col (0 .. $#ri) {
-        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')) {
             $row_widgets->[$col]->set_active($ri[$col]);
         }
         else {
@@ -245,7 +250,7 @@ sub _harvest_row {
     my ($row_widgets, $row_n) = @_;
     my @ri;
     for my $col (0 .. 6) {
-        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')) {
             $ri[$col] = $row_widgets->[$col]->get_active() ? 1 : 0;
         }
         else {
@@ -261,18 +266,10 @@ sub _harvest_row {
 sub _clear_row {
     my ($self, $row_n) = @_;
     my $row_widgets = $self->{entries}[$row_n];
-    my @data = (
-        ' ' x 16,
-        '000.000',
-        'AUTO',
-        '0',
-        '0',
-        '1',
-        '0'
-    );
-    for my $col (0 .. $#data){
-        
-        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+    my @data = (' ' x 16, '000.000', 'AUTO', '0', '0', '1', '0');
+    for my $col (0 .. $#data) {
+
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')) {
             $row_widgets->[$col]->set_active($data[$col]);
         }
         else {
@@ -284,7 +281,8 @@ sub _clear_row {
 sub _load_dialog {
     my $self = shift;
     no strict;
-    my $open = Gtk2::FileChooserDialog->new("Load channels", $self->{window}, GTK_FILE_CHOOSER_ACTION_OPEN, 'Cancel', GTK_RESPONSE_CANCEL, 'Open', GTK_RESPONSE_ACCEPT);
+    my $open = Gtk2::FileChooserDialog->new("Load channels",
+        $self->{window}, GTK_FILE_CHOOSER_ACTION_OPEN, 'Cancel', GTK_RESPONSE_CANCEL, 'Open', GTK_RESPONSE_ACCEPT);
     $open->show;
     my $resp = $open->run;
     $open->hide;
@@ -295,7 +293,8 @@ sub _load_dialog {
 sub _save_dialog {
     my $self = shift;
     no strict;
-    my $save = Gtk2::FileChooserDialog->new("Save channels", $self->{window}, GTK_FILE_CHOOSER_ACTION_SAVE, 'Cancel', GTK_RESPONSE_CANCEL, 'Save', GTK_RESPONSE_ACCEPT);
+    my $save = Gtk2::FileChooserDialog->new("Save channels",
+        $self->{window}, GTK_FILE_CHOOSER_ACTION_SAVE, 'Cancel', GTK_RESPONSE_CANCEL, 'Save', GTK_RESPONSE_ACCEPT);
     $save->show;
     my $resp = $save->run;
     $save->hide;
@@ -307,7 +306,7 @@ sub _confirm_dialog {
     my $self = shift;
     no strict;
     my $confirm = Gtk2::Dialog->new("Confirm", $self->{window}, GTK_DIALOG_MODAL);
-    for (['Cancel', GTK_RESPONSE_CANCEL], ['Yes, write channels to scanner', GTK_RESPONSE_OK]){
+    for ([ 'Cancel', GTK_RESPONSE_CANCEL ], [ 'Yes, write channels to scanner', GTK_RESPONSE_OK ]) {
         my ($text, $response_type) = @$_;
         $confirm->add_button($text, $response_type);
     }
@@ -325,17 +324,17 @@ sub _check_for_duplicates {
     my %seen;
     my $info = $self->harvest_table();
     my @dups;
-    for my $ch (@$info){
+    for my $ch (@$info) {
         my ($frq, $index) = @$ch{qw(frq index)};
-        if ($frq =~ /[1-9]/ && $seen{$frq}){
-            push @dups, [$ch->{'index'}, "DUPLICATE: [$ch->{index}] $ch->{name} $ch->{frq}    already exists as $seen{$frq}"];
+        if ($frq =~ /[1-9]/ && $seen{$frq}) {
+            push @dups, [ $ch->{'index'}, "DUPLICATE: [$ch->{index}] $ch->{name} $ch->{frq}    already exists as $seen{$frq}" ];
             no strict 'subs';
-            $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, Gtk2::Gdk::Color->new(62000,20000,20000));
+            $self->{entries}[ $index - 1 ][0]->modify_base(GTK_STATE_NORMAL, Gtk2::Gdk::Color->new(62000, 20000, 20000));
         }
         else {
             $seen{$frq} = "[$ch->{index}] $ch->{name} $ch->{frq}";
             no strict 'subs';
-            $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, undef);
+            $self->{entries}[ $index - 1 ][0]->modify_base(GTK_STATE_NORMAL, undef);
         }
     }
     my $dup_scroll = Gtk2::ScrolledWindow->new;
@@ -343,38 +342,37 @@ sub _check_for_duplicates {
         no strict 'subs';
         $dup_scroll->set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
     }
-    $dup_scroll->add_with_viewport( Gtk2::Label->new( join("\n", map {$_->[1]} @dups) || "No duplicates were found." ) );
-    $dup_scroll->set_size_request(768,400);
+    $dup_scroll->add_with_viewport(Gtk2::Label->new(join("\n", map { $_->[1] } @dups) || "No duplicates were found."));
+    $dup_scroll->set_size_request(768, 400);
     my $dialog = Bc125At::GUI::ErrorDialog->new('Duplicates', $dup_scroll, $self->{window});
     my $choices_hbox = Gtk2::HBox->new();
-    $choices_hbox->add($_) for
-        _button(
-            'Remove duplicates and leave gaps',
-            sub {
-                for (@dups){
-                    $self->_clear_row($_->[0] - 1);
-                }
-                $dialog->destroy;
-                $self->_check_for_duplicates; # recheck
+    $choices_hbox->add($_) for _button(
+        'Remove duplicates and leave gaps',
+        sub {
+            for (@dups) {
+                $self->_clear_row($_->[0] - 1);
             }
-        ),
-        _button(
-            'Remove duplicates and slide channels to fill gaps',
-            sub {
-                for (sort { $b <=> $a } map { $_->[0] } @dups){ # splice backwards from end so as not to disrupt known dup offsets
-                    splice @$info, $_ - 1, 1;
-                    push @$info, Bc125At::Command::_empty_rowinfo(500);
-                    
-                }
-                @$info == 500 or die;
-                for (0 .. $#$info){
-                    $info->[$_]{'index'} = $_ + 1; # renumber
-                }
-                $self->populate_table($info);
-                $dialog->destroy;
-                $self->_check_for_duplicates; # recheck
+            $dialog->destroy;
+            $self->_check_for_duplicates;    # recheck
+        }
+      ),
+      _button(
+        'Remove duplicates and slide channels to fill gaps',
+        sub {
+            for (sort { $b <=> $a } map { $_->[0] } @dups) {    # splice backwards from end so as not to disrupt known dup offsets
+                splice @$info, $_ - 1, 1;
+                push @$info, Bc125At::Command::_empty_rowinfo(500);
+
             }
-        );
+            @$info == 500 or die;
+            for (0 .. $#$info) {
+                $info->[$_]{'index'} = $_ + 1;                  # renumber
+            }
+            $self->populate_table($info);
+            $dialog->destroy;
+            $self->_check_for_duplicates;                       # recheck
+        }
+      );
     $dialog->get_content_area->add($choices_hbox);
     $dialog->main;
 }

@@ -7,11 +7,11 @@ use Bc125At::Version;
 
 sub show_about_box {
 
-my $window = shift;
+    my $window = shift;
 
-my $label = Gtk2::Label->new();
-$label->set_markup(
-<<END_OF_ABOUT
+    my $label = Gtk2::Label->new();
+    $label->set_markup(
+        <<END_OF_ABOUT
 <tt>
 bc125at-perl version $Bc125At::Version::version &lt;http://www.rikus.org/bc125at-perl&gt;
 
@@ -38,15 +38,16 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 </tt>
 END_OF_ABOUT
-);
+    );
 
-my $box = Bc125At::GUI::ErrorDialog->new('About',
-$label,
-,
-$window
+    my $box = Bc125At::GUI::ErrorDialog->new(
+        'About',
+        $label,
+        ,
+        $window
 
-);
-$box->main;
+    );
+    $box->main;
 }
 
 1;

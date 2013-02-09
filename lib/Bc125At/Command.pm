@@ -1,19 +1,19 @@
 package Bc125At::Command;
 
 # Copyright (c) 2013, Rikus Goodell.
-# 
+#
 # All rights reserved.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
 # the rights to use, copy, modify, merge, publish, distribute, sublicense,
 # and/or sell copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -354,8 +354,8 @@ sub _massage {
     my $parsed   = shift;
     my $massaged = {%$parsed};
     for my $k (keys %$massaged) {
-        if ($k eq 'name' && !$massaged->{$k}){
-            $massaged->{$k} = ' ' x 16; # some amount of whitespace is apparently required to erase existing channel names
+        if ($k eq 'name' && !$massaged->{$k}) {
+            $massaged->{$k} = ' ' x 16;    # some amount of whitespace is apparently required to erase existing channel names
         }
         if ($k =~ m{^frq} && $massaged->{$k} =~ /\./) {
             $massaged->{$k} = _nonhuman_freq($massaged->{$k});
@@ -372,15 +372,15 @@ sub _max {
 sub _empty_rowinfo {
     my $index = shift || die;
     return {
-              cmd => 'CIN',
-            index => $index,
-             name => ' ' x 16,
-              frq => '000.000',
-              mod => 'NFM',
+        cmd       => 'CIN',
+        index     => $index,
+        name      => ' ' x 16,
+        frq       => '000.000',
+        mod       => 'NFM',
         ctcss_dcs => '0',
-              dly => '2',
-             lout => '1',
-              pri => '0',
+        dly       => '2',
+        lout      => '1',
+        pri       => '0',
     };
 }
 
