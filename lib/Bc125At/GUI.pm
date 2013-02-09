@@ -130,6 +130,9 @@ sub _setup_widgets {
             if ($row == -1) {
                 $widget = Gtk2::Label->new($head[$col]);
             }
+            elsif ($head[$col] eq 'lout'){
+                $entries[$row][$col] = $widget = Gtk2::CheckButton->new_with_label('L/O');
+            }
             else {
                 $entries[$row][$col] = $widget = Gtk2::Entry->new_with_max_length(16);
             }
@@ -165,7 +168,12 @@ sub _populate_row {
     my ($row_widgets, $rowinfo) = @_;
     my @ri = @$rowinfo{qw(name frq mod ctcss_dcs dly lout pri)};
     for my $col (0 .. $#ri) {
-        $row_widgets->[$col]->set_text($ri[$col]);
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+            $row_widgets->[$col]->set_active($ri[$col]);
+        }
+        else {
+            $row_widgets->[$col]->set_text($ri[$col]);
+        }
     }
 }
 
@@ -182,7 +190,12 @@ sub _harvest_row {
     my ($row_widgets, $row_n) = @_;
     my @ri;
     for my $col (0 .. 6) {
-        $ri[$col] = $row_widgets->[$col]->get_text();
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+            $ri[$col] = $row_widgets->[$col]->get_active() ? 1 : 0;
+        }
+        else {
+            $ri[$col] = $row_widgets->[$col]->get_text();
+        }
     }
     unshift @ri, 'CIN', $row_n + 1;
     my $rowinfo = {};
