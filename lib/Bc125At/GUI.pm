@@ -130,6 +130,29 @@ sub _setup_widgets {
             }
         ),
         _button(
+            "Check for duplicates",
+            sub {
+                my %seen;
+                my $info = $self->harvest_table();
+                my @dups;
+                for my $ch (@$info){
+                    my ($frq, $index) = @$ch{qw(frq index)};
+                    next if $frq !~ /[1-9]/;
+                    if ($seen{$frq}){
+                        push @dups, "DUPLICATE: [$ch->{index}] $ch->{name} $ch->{frq}    already exists as $seen{$frq}";
+                        no strict 'subs';
+                        $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, Gtk2::Gdk::Color->new(62000,20000,20000));
+                    }
+                    else {
+                        $seen{$frq} = "[$ch->{index}] $ch->{name} $ch->{frq}";
+                        no strict 'subs';
+                        $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, undef);
+                    }
+                }
+                Bc125At::GUI::ErrorDialog->new('Duplicates', join("\n", @dups), $self->{window})->main;
+            }
+        ),
+        _button(
             "Quit",
             sub {
                 Gtk2->main_quit;
