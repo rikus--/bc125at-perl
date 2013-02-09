@@ -176,7 +176,7 @@ END
     );
     for my $row (-1 .. 499) {
         if ($row >= 0) {
-            my $label = Gtk2::Label->new($row + 1);
+            my $label = _button($row + 1, sub { $self->{scanner}->jump_to_channel($row + 1) });
             $table->attach_defaults($label, 0, 1, 1 + $row, 2 + $row);
         }
         for my $col (0 .. 6) {

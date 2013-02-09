@@ -384,4 +384,13 @@ sub _empty_rowinfo {
     };
 }
 
+sub jump_to_channel {
+    my ($self, $channel) = @_;
+    my @channel_keys = split //, $channel;
+    my @cmds = map {
+        join(',', 'KEY', $_, 'P')
+    } 'S', 'H', @channel_keys, 'H';
+    $self->run_cmds(\@cmds);
+}
+
 1;
