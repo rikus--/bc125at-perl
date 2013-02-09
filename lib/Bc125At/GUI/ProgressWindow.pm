@@ -30,16 +30,18 @@ use Gtk2;
 use base 'Gtk2::Dialog';
 
 sub new {
-    my ($package, $title, $parent) = @_;
+    my ($package, $title, $parent, $setup) = @_;
     my $self = do {
         no strict;
         Gtk2::Dialog->new($title, $parent, GTK_DIALOG_MODAL);
     };
     $self->{progressbar} = Gtk2::ProgressBar->new();
     $self->{progressbar}->set_size_request(300,30);
+    $setup->($self) if $setup;
     $self->get_content_area->add($self->{progressbar});
+    bless $self, $package;
     $self->show_all;
-    return bless $self, $package;
+    return $self;
 }
 
 # progress bar setting callback which must nudge the main gtk2 loop along while

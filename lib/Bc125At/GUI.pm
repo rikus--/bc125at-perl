@@ -54,6 +54,7 @@ sub new {
 sub main {
     my $self = shift;
     $self->{window}->show_all();
+    $self->{splash}->done if $self->{splash};
     Gtk2->main;
 }
 
@@ -145,6 +146,18 @@ sub _setup_widgets {
 
     my @entries;
 
+    my $splash_label = Gtk2::Label->new(
+<<END
+bc125at-perl
+Copyright (c) 2013, Rikus Goodell.
+
+building interface...
+END
+);
+    $splash_label->set_justify('center');
+    $self->{splash} = Bc125At::GUI::ProgressWindow->new('bc125at-perl', $self->{window}, sub {
+        $_[0]->get_content_area->add($splash_label)
+    });
     for my $row (-1 .. 499) {
         if ($row >= 0) {
             my $label = Gtk2::Label->new($row + 1);
@@ -168,8 +181,11 @@ sub _setup_widgets {
             my $width = $col == 0 ? 2 : 1;
             my $hoff  = $col == 0 ? 0 : 1;
             $table->attach_defaults($widget, $hoff + 1 + $col, $hoff + $width + 1 + $col, 1 + $row, 2 + $row);
+            $widget->show;
+            $self->{splash}->set(($row+2), 501);
         }
     }
+    # splash window is cleaned up in main
 
     $vbox->add($scroll);
     $window->add($vbox);
