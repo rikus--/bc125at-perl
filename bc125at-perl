@@ -205,6 +205,5 @@ bc125at-perl driver
 
 bc125at-perl gui
 
-   Load the crude, experimental, and incomplete GUI which may currently
-   be used only for reading from and writing directly to the scanner.
+   Load the GUI.
 

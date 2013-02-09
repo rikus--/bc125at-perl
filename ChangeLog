@@ -1,3 +1,18 @@
+2013-02-08
+
+- Version 0.5
+- Add quit button
+- Add splash screen to distract you from the delay while setting up the GUI
+- Improve unit tests for Bc125At::Command + misc cleanup/fixes
+- Implement graphical error notification
+- Disable unneeded horizontal scrollbar
+- Prevent resizing of main window due to unreasonable sluggishness
+- Implement graphical progress bar window for reading / writing
+- Exit when window is closed
+- Show a checkbox for lockout instead of a text box with a boolean value
+- Add URL and brief description to README
+- Provide license
+
 2013-02-07
 
 - Version 0.4
