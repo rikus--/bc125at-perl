@@ -353,6 +353,9 @@ sub _massage {
     my $parsed   = shift;
     my $massaged = {%$parsed};
     for my $k (keys %$massaged) {
+        if ($k eq 'name' && !$massaged->{$k}){
+            $massaged->{$k} = ' ' x 16; # some amount of whitespace is apparently required to erase existing channel names
+        }
         if ($k =~ m{^frq} && $massaged->{$k} =~ /\./) {
             $massaged->{$k} = _nonhuman_freq($massaged->{$k});
         }
