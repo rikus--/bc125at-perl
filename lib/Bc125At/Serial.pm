@@ -25,6 +25,12 @@ package Bc125At::Serial;
 use strict;
 use warnings;
 
+# FIXME: This use line should be deleted and Device::SerialPort loaded only
+# if available, but right now I don't have serial I/O working properly when
+# not using Device::SerialPort, so I will force Bc125At::Serial to depend on
+# it until I have a reliable alternative.
+use Device::SerialPort;
+
 my $have_io_select = eval {
     require IO::Select;
     1;

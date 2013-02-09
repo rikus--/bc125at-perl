@@ -10,4 +10,8 @@ WriteMakefile(
     VERSION   => $Bc125At::Version::version,
     PMLIBDIRS => ['lib'],
     EXE_FILES => ['bc125at-perl'],
+    PREREQ_PM => {
+        'Device::SerialPort' => '0',
+        'Gtk2'               => '0',
+    },
 );
