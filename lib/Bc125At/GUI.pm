@@ -28,6 +28,7 @@ use warnings;
 use Bc125At::Command;
 use Bc125At::GUI::ProgressWindow;
 use Bc125At::GUI::ErrorDialog;
+use Bc125At::GUI::AboutDialog;
 
 BEGIN {
     eval {
@@ -78,6 +79,7 @@ sub _setup_widgets {
     my $hbox = Gtk2::HBox->new();
 
     for (
+        _button( 'About...', sub { Bc125At::GUI::AboutDialog::show_about_box($self->{window}) } ),
         _button(
             "Read from scanner",
             sub {
