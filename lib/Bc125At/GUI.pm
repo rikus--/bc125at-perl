@@ -131,26 +131,7 @@ sub _setup_widgets {
         ),
         _button(
             "Check for duplicates",
-            sub {
-                my %seen;
-                my $info = $self->harvest_table();
-                my @dups;
-                for my $ch (@$info){
-                    my ($frq, $index) = @$ch{qw(frq index)};
-                    next if $frq !~ /[1-9]/;
-                    if ($seen{$frq}){
-                        push @dups, "DUPLICATE: [$ch->{index}] $ch->{name} $ch->{frq}    already exists as $seen{$frq}";
-                        no strict 'subs';
-                        $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, Gtk2::Gdk::Color->new(62000,20000,20000));
-                    }
-                    else {
-                        $seen{$frq} = "[$ch->{index}] $ch->{name} $ch->{frq}";
-                        no strict 'subs';
-                        $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, undef);
-                    }
-                }
-                Bc125At::GUI::ErrorDialog->new('Duplicates', join("\n", @dups), $self->{window})->main;
-            }
+            sub { $self->_check_for_duplicates }
         ),
         _button(
             "Quit",
@@ -275,6 +256,29 @@ sub _harvest_row {
     return $rowinfo;
 }
 
+sub _clear_row {
+    my ($self, $row_n) = @_;
+    my $row_widgets = $self->{entries}[$row_n];
+    my @data = (
+        ' ' x 16,
+        '000.000',
+        'AUTO',
+        '0',
+        '0',
+        '1',
+        '0'
+    );
+    for my $col (0 .. $#data){
+        
+        if ($row_widgets->[$col]->isa('Gtk2::CheckButton')){
+            $row_widgets->[$col]->set_active($data[$col]);
+        }
+        else {
+            $row_widgets->[$col]->set_text($data[$col]);
+        }
+    }
+}
+
 sub _load_dialog {
     my $self = shift;
     no strict;
@@ -310,6 +314,67 @@ sub _confirm_dialog {
     $confirm->hide;
     return 1 if $resp =~ /^ok/i;
     return;
+}
+
+# TODO: Move rowinfo-related bits of this into Bc125At::Command and write
+# unit tests for duplicate detection and removal.
+sub _check_for_duplicates {
+    my $self = shift;
+    my %seen;
+    my $info = $self->harvest_table();
+    my @dups;
+    for my $ch (@$info){
+        my ($frq, $index) = @$ch{qw(frq index)};
+        if ($frq =~ /[1-9]/ && $seen{$frq}){
+            push @dups, [$ch->{'index'}, "DUPLICATE: [$ch->{index}] $ch->{name} $ch->{frq}    already exists as $seen{$frq}"];
+            no strict 'subs';
+            $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, Gtk2::Gdk::Color->new(62000,20000,20000));
+        }
+        else {
+            $seen{$frq} = "[$ch->{index}] $ch->{name} $ch->{frq}";
+            no strict 'subs';
+            $self->{entries}[$index - 1][0]->modify_base(GTK_STATE_NORMAL, undef);
+        }
+    }
+    my $dup_scroll = Gtk2::ScrolledWindow->new;
+    {
+        no strict 'subs';
+        $dup_scroll->set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    }
+    $dup_scroll->add_with_viewport( Gtk2::Label->new( join("\n", map {$_->[1]} @dups) || "No duplicates were found." ) );
+    $dup_scroll->set_size_request(768,400);
+    my $dialog = Bc125At::GUI::ErrorDialog->new('Duplicates', $dup_scroll, $self->{window});
+    my $choices_hbox = Gtk2::HBox->new();
+    $choices_hbox->add($_) for
+        _button(
+            'Remove duplicates and leave gaps',
+            sub {
+                for (@dups){
+                    $self->_clear_row($_->[0] - 1);
+                }
+                $dialog->destroy;
+                $self->_check_for_duplicates; # recheck
+            }
+        ),
+        _button(
+            'Remove duplicates and slide channels to fill gaps',
+            sub {
+                for (sort { $b <=> $a } map { $_->[0] } @dups){ # splice backwards from end so as not to disrupt known dup offsets
+                    splice @$info, $_ - 1, 1;
+                    push @$info, Bc125At::Command::_empty_rowinfo(500);
+                    
+                }
+                @$info == 500 or die;
+                for (0 .. $#$info){
+                    $info->[$_]{'index'} = $_ + 1; # renumber
+                }
+                $self->populate_table($info);
+                $dialog->destroy;
+                $self->_check_for_duplicates; # recheck
+            }
+        );
+    $dialog->get_content_area->add($choices_hbox);
+    $dialog->main;
 }
 
 1;

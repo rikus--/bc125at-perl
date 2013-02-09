@@ -30,20 +30,25 @@ use Gtk2;
 use base 'Gtk2::Dialog';
 
 sub new {
-    my ($package, $title, $summary, $parent) = @_;
+    my ($package, $title, $content, $parent) = @_;
     no strict 'subs';
     my $self = do {
-        no strict;
+        no strict 'subs';
         Gtk2::Dialog->new($title, $parent, GTK_DIALOG_MODAL);
     };
-    $self->get_content_area->add( Gtk2::Label->new($summary) );
-    $self->add_button('Darn', GTK_RESPONSE_OK);
-    $self->show_all;
+    if (ref $content && $content->isa('Gtk2::Widget')){
+        $self->get_content_area->add($content);
+    }
+    else {
+        $self->get_content_area->add( Gtk2::Label->new($content) );
+    }
+    $self->add_button('OK', GTK_RESPONSE_OK);
     return bless $self, $package;
 }
 
 sub main {
     my $self = shift;
+    $self->show_all;
     $self->show;
     $self->run;
     $self->destroy;

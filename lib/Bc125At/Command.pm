@@ -368,4 +368,19 @@ sub _max {
     return $x > $y ? $x : $y;
 }
 
+sub _empty_rowinfo {
+    my $index = shift || die;
+    return {
+              cmd => 'CIN',
+            index => $index,
+             name => ' ' x 16,
+              frq => '000.000',
+              mod => 'NFM',
+        ctcss_dcs => '0',
+              dly => '2',
+             lout => '1',
+              pri => '0',
+    };
+}
+
 1;
