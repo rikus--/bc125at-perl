@@ -128,6 +128,12 @@ sub _setup_widgets {
                 Bc125At::Command::dumper($filename, $info, 'channel');
                 print "Saved channels to $filename\n";
             }
+        ),
+        _button(
+            "Quit",
+            sub {
+                Gtk2->main_quit;
+            }
         )
       )
     {
