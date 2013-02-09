@@ -96,10 +96,11 @@ sub get_channel_info {
         my $channel_info = eval {
             my $ci = _parse_channel_info($self->{serial}->cmd('CIN,' . $index));
             _validate_info([$ci]);
+            die "sanity failure: $ci->{index} != $index" if $ci->{'index'} != $index;
             $ci;
         };
         if ($@) {
-            warn "\nchannel $index try 1/3: $@\n";
+            warn "\nchannel $index try $try/3: $@\n";
             next;
         }
         return $channel_info;
