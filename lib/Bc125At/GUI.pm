@@ -60,6 +60,8 @@ sub _setup_widgets {
 
     my $window = $self->{window};
 
+    $window->signal_connect(destroy => sub { Gtk2->main_quit });
+
     my $scroll = Gtk2::ScrolledWindow->new(Gtk2::Adjustment->new(400, 200, 800, 1, 1, 50));
 
     my $vbox = Gtk2::VBox->new(0);
