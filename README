@@ -3,6 +3,12 @@ Copyright (c) 2013 Rikus Goodell. All rights reserved.
 This software is distributed free of charge and comes with NO WARRANTY.
 See LICENSE for redistribution info.
 
+http://www.rikus.org/bc125at-perl
+
+-------------------------------------------------------------------------
+
+A Perl-based utility for configuring/programming the Uniden BC125AT on Linux
+
 -------------------------------------------------------------------------
 
 Getting started:
