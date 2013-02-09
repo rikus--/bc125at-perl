@@ -13,7 +13,7 @@ mkdir ../tarballs/bc125at-perl-$version/lib/Bc125At
 cp -pf README LICENSE ChangeLog MANIFEST Makefile.PL ../tarballs/bc125at-perl-$version/
 cp -pf bc125at-perl ../tarballs/bc125at-perl-$version/
 cp -pf lib/*.pm ../tarballs/bc125at-perl-$version/lib/
-cp -pf lib/Bc125At/*.pm ../tarballs/bc125at-perl-$version/lib/Bc125At/
+cp -pf lib/Bc125At/*/*.pm lib/Bc125At/*.pm ../tarballs/bc125at-perl-$version/lib/Bc125At/
 cp -pf t/*.t ../tarballs/bc125at-perl-$version/t/
 
 cd ../tarballs

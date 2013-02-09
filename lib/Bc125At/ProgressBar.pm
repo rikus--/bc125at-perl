@@ -22,6 +22,25 @@ package Bc125At::ProgressBar;
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+=head1 CONSTRUCTION
+
+Bc125At::ProgressBar->new( ... )
+
+=head1 OPTIONS
+
+=over 3
+
+=item * value - startign value (defaults to 0)
+
+=item * max - value at end of progress bar (defaults to 100)
+
+=item * redisplay - redisplay interval (defaults to 5)
+
+=item * callback - subroutine to call on progress bar updates (optional, defaults to nothing)
+
+=back
+
+=cut
 sub new {
     my ($package, @args) = @_;
     my $self = {
@@ -53,6 +72,7 @@ sub display {
     my $frac = $self->{value} / $self->{max};
     print "\r|" . ("-" x 50) . "|" . " $self->{value} / $self->{max}" . (" " x 10) . "\r" . "|" . ("#" x (50 * $frac));
     print "\n" if $self->{value} >= $self->{max};
+    $self->{callback}->(@$self{qw(value max)}) if $self->{callback};
 }
 
 1;

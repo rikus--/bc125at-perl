@@ -26,6 +26,7 @@ use strict;
 use warnings;
 
 use Bc125At::Command;
+use Bc125At::GUI::ProgressWindow;
 
 BEGIN {
     eval {
@@ -71,18 +72,22 @@ sub _setup_widgets {
         _button(
             "Read from scanner",
             sub {
+                my $progress_window = Bc125At::GUI::ProgressWindow->new("Reading from scanner...", $self->{window});
                 $self->{scanner}->begin_program;
-                $self->populate_table($self->{scanner}->get_all_channel_info());
+                $self->populate_table($self->{scanner}->get_all_channel_info(undef, sub { $progress_window->set(@_) }));
                 $self->{scanner}->end_program;
+                $progress_window->done;
             }
         ),
         _button(
             "Write to scanner",
             sub {
                 $self->_confirm_dialog || return;
+                my $progress_window = Bc125At::GUI::ProgressWindow->new("Writing to scanner...", $self->{window});
                 $self->{scanner}->begin_program;
-                $self->{scanner}->write_channels(undef, $self->harvest_table());
+                $self->{scanner}->write_channels(undef, $self->harvest_table(), sub { $progress_window->set(@_) });
                 $self->{scanner}->end_program;
+                $progress_window->done;
             }
         ),
         _button(

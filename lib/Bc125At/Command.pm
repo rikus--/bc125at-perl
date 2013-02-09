@@ -114,9 +114,9 @@ sub get_search_group_info {
 }
 
 sub run_cmds {
-    my ($self, $cmds) = @_;
+    my ($self, $cmds, $progress_callback) = @_;
     my $size = @$cmds;
-    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max(int($size / 40), 1));
+    my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max(int($size / 40), 1), callback => $progress_callback);
     my $failed;
     for my $cmd (@$cmds) {
         my $ret = $self->{serial}->cmd($cmd);
@@ -143,11 +143,11 @@ Optional boolean parameter may be set to enable
 =cut
 
 sub get_all_channel_info {
-    my ($self, $impatient) = @_;
+    my ($self, $impatient, $progress_callback) = @_;
     my @info;
     my $zeros;
     print "Reading channnels from scanner ...\n";
-    my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 12);
+    my $progress = Bc125At::ProgressBar->new(max => 500, redisplay => 12, callback => $progress_callback);
     for my $n (1 .. 500) {
         my $thischannel = $self->get_channel_info($n);
         if (_freq_is_unset($thischannel->{frq})) {
@@ -273,14 +273,14 @@ get_all_channel_info.)
 =cut
 
 sub write_channels {
-    my ($self, $file, $info) = @_;
+    my ($self, $file, $info, $progress_callback) = @_;
     if (!$info) {
         $info = undumper($file);
     }
     _validate_info($info);
     my $cmds = compose_multi_channel_info($info);
     print "Writing channels to scanner ...\n";
-    my ($status, $msg) = $self->run_cmds($cmds);
+    my ($status, $msg) = $self->run_cmds($cmds, $progress_callback);
     print "Done! $msg\n";
 }
 
