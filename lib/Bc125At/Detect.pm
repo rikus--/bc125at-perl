@@ -24,29 +24,30 @@ package Bc125At::Detect;
 
 sub detect {
     my ($devinfo, $vendor_hex, $product_hex, $found);
-    for (`lsusb -v`) {
-        if (/^Bus \d+ Device \d+/) {
+    open my $devices, '<', '/proc/bus/usb/devices' or warn "couldn't open USB device list: $!\n";
+    while(<$devices>){
+        if (/^T:/){
             chomp($devinfo = $_);
             ($vendor_hex, $product_hex, $found) = (undef, undef, undef);
         }
-        if (/idVendor\s*(0x\S+)/) {
-            $vendor_hex = $1;
+        if (/Vendor=(\S+)/) {
+            $vendor_hex = "0x$1";
         }
-        if (/idProduct\s*(0x\S+)/) {
-            $product_hex = $1;
+        if (/ProdID=(\S+)/) {
+            $product_hex = "0x$1";
         }
-        if (/iProduct\s*\S*\s*BC125AT/) {
+        if (/Product=BC125AT/) {
             $found = 1;
         }
 
         if (   ($found && $vendor_hex && $product_hex)
             || ($vendor_hex eq '0x1965' && $product_hex eq '0x0017'))
         {
-            warn "Found a BC125AT at $devinfo\n";
+            #warn "Found a BC125AT at $devinfo\n";
             return ($devinfo, $vendor_hex, $product_hex);
         }
     }
-    warn "Couldn't find it. Sorry.\n";
+    #warn "Couldn't find it. Sorry.\n";
     return;
 }
 

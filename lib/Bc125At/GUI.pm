@@ -56,7 +56,13 @@ sub main {
     my $self = shift;
     $self->{window}->show_all();
     $self->{splash}->done if $self->{splash};
+    $self->device_check;
     $self->setup_command_obj_if_not_ready;
+    $SIG{ALRM} = sub {
+        $self->spare_time;
+        alarm 1;
+    };
+    alarm 1;
     Gtk2->main;
 }
 
@@ -65,7 +71,7 @@ sub _setup_widgets {
 
     my $window = $self->{window};
 
-    $window->signal_connect(destroy => sub { Gtk2->main_quit });
+    $window->signal_connect(destroy => sub { $self->quit });
 
     # This window has a lot of widgets in it, so resizing is likely to be horribly sluggish.
     $window->set_resizable(0);
@@ -76,19 +82,13 @@ sub _setup_widgets {
         $scroll->set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
     }
 
-    my $vbox = Gtk2::VBox->new(0);
-    my $hbox = Gtk2::HBox->new();
+    my $vbox   = Gtk2::VBox->new(0);
+    my $hbox   = Gtk2::HBox->new();
+    $self->{status} = Gtk2::Label->new();
 
     for (
         _button('About...', sub { Bc125At::GUI::AboutDialog::show_about_box($self->{window}) }),
-        _button('Reload driver', sub {
-            eval {
-                $self->{scanner} = undef; # close existing filehandle(s), if any
-                Bc125At::Detect::setup_driver() || die "setup_driver() failed\n";
-                $self->{scanner} = Bc125At::Command->new();
-            };
-            Bc125At::GUI::ErrorDialog->new('Driver setup', sprintf("Driver was %ssuccessfully reloaded%s", !$@ ? ('', '') : ('NOT ', ": $@")), $self->{window})->main;
-        }),
+        _button('Reload driver', sub { $self->reload }),
         _button(
             "Read from scanner",
             sub {
@@ -148,9 +148,7 @@ sub _setup_widgets {
         ),
         _button(
             "Quit",
-            sub {
-                Gtk2->main_quit;
-            }
+            sub { $self->quit }
         )
       )
     {
@@ -158,6 +156,8 @@ sub _setup_widgets {
     }
 
     $vbox->add($hbox);
+
+    $vbox->add($self->{status});
 
     my $table = Gtk2::Table->new(501, 8, 1);
 
@@ -398,6 +398,49 @@ sub setup_command_obj_if_not_ready {
     }
     $self->{scanner} = $scanner;
     return 1;
+}
+
+sub status {
+    my ($self, $text) = @_;
+    $self->{status}->set_text($text);
+}
+
+sub spare_time {
+    my $self = shift;
+    my $t = time;
+    if ($t > ($self->{last_device_check} || 0) ){
+        $self->{last_device_check} = $t;
+        $self->device_check;
+    }
+}
+
+sub quit { Gtk2->main_quit };
+
+sub reload {
+    my $self = shift;
+    eval {
+        $self->{scanner} = undef; # close existing filehandle(s), if any
+        Bc125At::Detect::setup_driver() || die "setup_driver() failed\n";
+        $self->{scanner} = Bc125At::Command->new();
+    };
+    Bc125At::GUI::ErrorDialog->new('Driver setup', sprintf("Driver was %ssuccessfully loaded%s", !$@ ? ('', '') : ('NOT ', ": $@")), $self->{window})->main;
+}
+
+sub device_check {
+   my $self = shift;
+   my ($devinfo, $product, $vendor) = Bc125At::Detect::detect();
+   if ($devinfo){
+       my ($bus_n, $dev_n) = $devinfo =~ /Bus=\s*(\d+).*?Dev#=\s*(\d+)/;
+       $self->status(sprintf 'BC125AT connected at bus %s device %s', $bus_n // '?', $dev_n // '?');
+       if (!$self->{connected}){
+           $self->reload;
+           $self->{connected} = 1;
+       }
+   }
+   else {
+       $self->{connected} = 0;
+       $self->status('No device detected');
+   }
 }
 
 1;

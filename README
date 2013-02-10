@@ -21,7 +21,7 @@ Getting started:
 If you want driver reloading to be achievable from the GUI (a fairly useful
 thing to be able to do) without having to run the entire thing as root,
 please follow these additional steps during the initial install, which will
-install a setuid helper program (you, the user, are responsible for deciding
+install a setuid helper program. (You, the user, are responsible for deciding
 whether this setuid program meets your security requirements):
 
   1. cd driver-helper
