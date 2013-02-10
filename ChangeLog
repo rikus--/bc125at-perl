@@ -1,5 +1,15 @@
-2013-02-08
+2012-02-09
 
+- Version 0.5.1
+- Force Bc125At::Serial to use Device::SerialPort for now
+- perltidy everything
+- Add about dialog
+- Sanity check index numbers when reading channels.
+- Implement automatic duplicate channel removal feature
+- Allow existing channel names to be wiped out in scanner when empty in UI
+- Implement "Check for duplicates" feature
+
+2013-02-08
 - Version 0.5
 - Add quit button
 - Add splash screen to distract you from the delay while setting up the GUI
