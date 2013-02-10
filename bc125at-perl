@@ -99,11 +99,10 @@ elsif ($command eq 'driver') {
     Bc125At::Detect::setup_driver();
 }
 elsif ($command eq 'gui') {
-    $scanner = Bc125At::Command->new();
-    $prog    = 1;                         # send extra EPG on exit, just in case
     require Bc125At::GUI;
-    my $gui = Bc125At::GUI->new($scanner);
-    $gui->main;
+    my $gui = Bc125At::GUI->new();
+    my $scanner = $gui->main;             # Let GUI create Bc125At::Command object to delay failure until UI is set up. Returns it at the end for cleanup.
+    $prog    = 1;                         # Send extra EPG on exit, just in case.
 }
 else { _usage() }
 
@@ -120,11 +119,11 @@ sub _usage {
 
 sub _prog {
     $prog = 1;
-    $scanner->begin_program();
+    $scanner->begin_program() if $scanner;
 }
 
 END {
-    $scanner->end_program() if $prog;
+    $scanner->end_program() if $scanner && $prog;
 }
 
 __DATA__

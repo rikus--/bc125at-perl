@@ -13,10 +13,22 @@ A Perl-based utility for configuring/programming the Uniden BC125AT on Linux
 
 Getting started:
 
-  perl Makefile.PL
-  make
-  make install
-  perldoc bc125at-perl
+  1. perl Makefile.PL
+  2. make
+  3. make install
+  4. perldoc bc125at-perl
+
+If you want driver reloading to be achievable from the GUI (a fairly useful
+thing to be able to do) without having to run the entire thing as root,
+please follow these additional steps during the initial install, which will
+install a setuid helper program (you, the user, are responsible for deciding
+whether this setuid program meets your security requirements):
+
+  1. cd driver-helper
+  2. make
+  3. sudo make install
+    -or-
+  3. su root -c "cd $(pwd) && make install"
 
 -------------------------------------------------------------------------
 

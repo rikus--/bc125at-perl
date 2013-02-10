@@ -51,12 +51,18 @@ sub detect {
 }
 
 sub setup_driver {
-    my ($devinfo, $vendor_hex, $product_hex) = detect();
-    return if !$devinfo;
-    system "rmmod usbserial >/dev/null 2>&1";
-    system "modprobe usbserial vendor=$vendor_hex product=$product_hex" and die;
-    system "mknod /dev/ttyUSB0 c 188 0" if !-e "/dev/ttyUSB0";
-    warn "Done setting up driver. Hope it works.\n";
+    if (-x '/usr/local/bin/bc125at-perl-driver-helper'){   # setuid helper program
+        system '/usr/local/bin/bc125at-perl-driver-helper';
+        $? == 0 or die sprintf "bc125at-perl-driver-helper exited nonzero (%d)\n", $? >> 8;
+    }
+    else {
+        my ($devinfo, $vendor_hex, $product_hex) = detect();
+        return if !$devinfo;
+        system "rmmod usbserial >/dev/null 2>&1";
+        system "modprobe usbserial vendor=$vendor_hex product=$product_hex" and die;
+        system "mknod /dev/ttyUSB0 c 188 0" if !-e "/dev/ttyUSB0";
+    }
+    print "Done setting up driver. Hope it works.\n";
 }
 
 #sub probe {

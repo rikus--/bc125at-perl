@@ -1,5 +1,7 @@
 bc125at-perl
 ChangeLog
+driver-helper/Makefile
+driver-helper/bc125at-perl-driver-helper.c
 lib/Bc125At.pm
 lib/Bc125At/Command.pm
 lib/Bc125At/Detect.pm

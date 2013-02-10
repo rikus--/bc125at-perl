@@ -25,6 +25,7 @@ package Bc125At::GUI;
 use strict;
 use warnings;
 
+use Bc125At::Detect;
 use Bc125At::Command;
 use Bc125At::GUI::ProgressWindow;
 use Bc125At::GUI::ErrorDialog;
@@ -41,11 +42,10 @@ BEGIN {
 }
 
 sub new {
-    my ($package, $scanner) = @_;
+    my ($package) = @_;
     my $window = Gtk2::Window->new('toplevel');
     my $self   = {
         window  => $window,
-        scanner => $scanner
     };
     bless $self;
     $self->_setup_widgets();
@@ -56,6 +56,7 @@ sub main {
     my $self = shift;
     $self->{window}->show_all();
     $self->{splash}->done if $self->{splash};
+    $self->setup_command_obj_if_not_ready;
     Gtk2->main;
 }
 
@@ -80,9 +81,18 @@ sub _setup_widgets {
 
     for (
         _button('About...', sub { Bc125At::GUI::AboutDialog::show_about_box($self->{window}) }),
+        _button('Reload driver', sub {
+            eval {
+                $self->{scanner} = undef; # close existing filehandle(s), if any
+                Bc125At::Detect::setup_driver() || die "setup_driver() failed\n";
+                $self->{scanner} = Bc125At::Command->new();
+            };
+            Bc125At::GUI::ErrorDialog->new('Driver setup', sprintf("Driver was %ssuccessfully reloaded%s", !$@ ? ('', '') : ('NOT ', ": $@")), $self->{window})->main;
+        }),
         _button(
             "Read from scanner",
             sub {
+                $self->setup_command_obj_if_not_ready || return;
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Reading from scanner...", $self->{window});
                 eval {
                     $self->{scanner}->begin_program;
@@ -99,6 +109,7 @@ sub _setup_widgets {
         _button(
             "Write to scanner",
             sub {
+                $self->setup_command_obj_if_not_ready || return;
                 $self->_confirm_dialog || return;
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Writing to scanner...", $self->{window});
                 eval {
@@ -375,6 +386,18 @@ sub _check_for_duplicates {
       );
     $dialog->get_content_area->add($choices_hbox);
     $dialog->main;
+}
+
+sub setup_command_obj_if_not_ready {
+    my $self = shift;
+    return 1 if $self->{scanner};
+    my $scanner = eval { Bc125At::Command->new() };
+    if ($@){
+        Bc125At::GUI::ErrorDialog->new('Error', $@)->main;
+        return;
+    }
+    $self->{scanner} = $scanner;
+    return 1;
 }
 
 1;
