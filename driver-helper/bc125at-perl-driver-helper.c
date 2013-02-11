@@ -110,7 +110,7 @@ int setup_device(char *vendor, char *product){
         }
         system("/bin/mknod /dev/ttyUSB0 c 188 0 2>/dev/null");
         usleep(250 * 1000); /* sleep 250 ms before chown or, oddly, it may not take effect */
-        if (chown("/dev/ttyUSB0", orig_uid, orig_gid) == 1)
+        if (chown("/dev/ttyUSB0", orig_uid, orig_gid) == -1)
             perror("chown failed");
     }
     return 0;
