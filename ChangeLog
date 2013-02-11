@@ -1,3 +1,8 @@
+2012-02-10 
+- Version 0.5.2
+- Auto-load driver when device is plugged in (GUI)
+- Add optional setuid helper program to automate driver setup.
+
 2012-02-09
 
 - Version 0.5.1
