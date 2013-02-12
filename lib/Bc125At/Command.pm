@@ -228,7 +228,7 @@ sub dumper {
     open my $fh, '>', $file or die $!;
     print {$fh} "[\n";
     for my $h (@$info) {
-        print {$fh} "    {\n";
+        print {$fh} "    {\n" or die $!;
         for my $k (_keys($type)) {
             my $pad = ' ' x (9 - length($k));
             print {$fh} "        $pad$k => '$h->{$k}',\n";
@@ -236,6 +236,7 @@ sub dumper {
         print {$fh} "    },\n";
     }
     print {$fh} "]\n";
+    close $fh or die $!;
 }
 
 sub undumper {
@@ -244,11 +245,10 @@ sub undumper {
     my $text;
     {
         local $/;
-        $text = <$fh>;
+        defined($text = <$fh>) or die $!;
     }
-    close $fh;
-    my $info = eval $text;    # XXX insecure, so don't load files from untrusted sources
-    warn $@ and return if $@;
+    close $fh or die $!;
+    my $info = eval $text or die $!;    # XXX insecure, so don't load files from untrusted sources
     return $info;
 }
 

@@ -41,6 +41,8 @@ BEGIN {
     }
 }
 
+sub do_or_alert(&$;$);
+
 sub new {
     my ($package) = @_;
     my $window = Gtk2::Window->new('toplevel');
@@ -94,16 +96,12 @@ sub _setup_widgets {
             sub {
                 $self->setup_command_obj_if_not_ready || return;
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Reading from scanner...", $self->{window});
-                eval {
+                do_or_alert {
                     $self->{scanner}->begin_program;
                     $self->populate_table($self->{scanner}->get_all_channel_info(undef, sub { $progress_window->set(@_) }));
                     $self->{scanner}->end_program;
-                };
-                my $err = $@;
+                } 'Error while reading from scanner';
                 $progress_window->done;
-                if ($err) {
-                    Bc125At::GUI::ErrorDialog->new('Error while reading from scanner', $err, $self->{window})->main;
-                }
             }
         ),
         _button(
@@ -112,23 +110,19 @@ sub _setup_widgets {
                 $self->setup_command_obj_if_not_ready || return;
                 $self->_confirm_dialog || return;
                 my $progress_window = Bc125At::GUI::ProgressWindow->new("Writing to scanner...", $self->{window});
-                eval {
+                do_or_alert {
                     $self->{scanner}->begin_program;
                     $self->{scanner}->write_channels(undef, $self->harvest_table(), sub { $progress_window->set(@_) });
                     $self->{scanner}->end_program;
-                };
-                my $err = $@;
+                } 'Error while writing to scanner';
                 $progress_window->done;
-                if ($err) {
-                    Bc125At::GUI::ErrorDialog->new('Error while writing to scanner', $err, $self->{window})->main;
-                }
             }
         ),
         _button(
             "Load file...",
             sub {
                 my $filename = $self->_load_dialog() || return;
-                my $info = Bc125At::Command::undumper($filename) || die;
+                my $info = do_or_alert { Bc125At::Command::undumper($filename) } 'Problem loading file';
                 $self->populate_table($info);
                 print "Loaded channels from $filename\n";
             }
@@ -138,7 +132,7 @@ sub _setup_widgets {
             sub {
                 my $filename = $self->_save_dialog() || return;
                 my $info = $self->harvest_table();
-                Bc125At::Command::dumper($filename, $info, 'channel');
+                do_or_alert { Bc125At::Command::dumper($filename, $info, 'channel') } 'Problem saving file';
                 print "Saved channels to $filename\n";
             }
         ),
@@ -187,7 +181,7 @@ END
     );
     for my $row (-1 .. 499) {
         if ($row >= 0) {
-            my $label = _button($row + 1, sub { $self->{scanner}->jump_to_channel($row + 1) });
+            my $label = _button($row + 1, sub { do_or_alert { $self->{scanner}->jump_to_channel($row + 1) } "Couldn't jump to channel" });
             $table->attach_defaults($label, 0, 1, 1 + $row, 2 + $row);
         }
         for my $col (0 .. 6) {
@@ -391,11 +385,7 @@ sub _check_for_duplicates {
 sub setup_command_obj_if_not_ready {
     my $self = shift;
     return 1 if $self->{scanner};
-    my $scanner = eval { Bc125At::Command->new() };
-    if ($@){
-        Bc125At::GUI::ErrorDialog->new('Error', $@)->main;
-        return;
-    }
+    my $scanner = do_or_alert { Bc125At::Command->new() } 'Error';
     $self->{scanner} = $scanner;
     return 1;
 }
@@ -418,12 +408,11 @@ sub quit { Gtk2->main_quit };
 
 sub reload {
     my $self = shift;
-    eval {
+    do_or_alert {
         $self->{scanner} = undef; # close existing filehandle(s), if any
         Bc125At::Detect::setup_driver() || die "setup_driver() failed\n";
         $self->{scanner} = Bc125At::Command->new();
-    };
-    Bc125At::GUI::ErrorDialog->new('Driver setup', sprintf("Driver was %ssuccessfully loaded%s", !$@ ? ('', '') : ('NOT ', ": $@")), $self->{window})->main;
+    } 'Driver could not be loaded';
 }
 
 sub device_check {
@@ -441,6 +430,16 @@ sub device_check {
        $self->{connected} = 0;
        $self->status('No device detected');
    }
+}
+
+sub do_or_alert(&$;$){
+    my ($sub, $title) = @_;
+    my $ret = eval { &$sub };
+    if ($@){
+        Bc125At::GUI::ErrorDialog->new($title, $@)->main;
+        return;
+    }
+    return $ret;
 }
 
 1;
