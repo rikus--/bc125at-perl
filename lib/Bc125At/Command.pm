@@ -119,17 +119,26 @@ sub run_cmds {
     my $size = @$cmds;
     my $progress = Bc125At::ProgressBar->new(max => $size, redisplay => _max(int($size / 40), 1), callback => $progress_callback);
     my $failed;
+    CMD:
     for my $cmd (@$cmds) {
-        my $ret = $self->{serial}->cmd($cmd);
-        if ($ret =~ /^(?:ERR|\w+,NG)/) {
-            print "\n\n $ret\n\n";
-            $failed++;
+        my $okay = 0;
+        my $err;
+        TRY: for my $try (1 .. 3) {
+            my $ret = $self->{serial}->cmd($cmd);
+            $err .= "$!\n" if $!;
+            if (!$ret || $ret =~ /^(?:ERR|\w+,NG)/) {
+                print "\nRunning '$cmd' failed: $ret\n";
+                $err .= "$ret\n" if $ret;
+            }
+            else {
+                $okay = 1;
+                last TRY;
+            }
         }
+        die "gave up on '$cmd' after 3 tries:\n$err\n" unless $okay;
         $progress->more();
     }
-    return $failed
-      ? (0, "$failed / $size commands failed\n")
-      : (1, "All $size operations succeeded");
+    return 1;
 }
 
 =head2 $scanner->get_all_channel_info()
@@ -281,9 +290,8 @@ sub write_channels {
     _validate_info($info);
     my $cmds = compose_multi_channel_info($info);
     print "Writing channels to scanner ...\n";
-    my ($status, $msg) = $self->run_cmds($cmds, $progress_callback);
-    die $msg if !$status;
-    print "Done! $msg\n";
+    $self->run_cmds($cmds, $progress_callback);
+    print "Done!\n";
 }
 
 =head2 $scanner->write_search_groups('filename.txt');
@@ -300,8 +308,8 @@ sub write_search_groups {
     my $info = undumper($file);
     my $cmds = compose_multi_search_group_info($info);
     print "Writing search groups to scanner ...\n";
-    my ($status, $msg) = $self->run_cmds($cmds);
-    print "Done! $msg\n";
+    $self->run_cmds($cmds);
+    print "Done!\n";
 }
 
 sub _validate_info {
