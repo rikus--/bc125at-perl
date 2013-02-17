@@ -30,6 +30,7 @@ use Bc125At::Command;
 use Bc125At::GUI::ProgressWindow;
 use Bc125At::GUI::ErrorDialog;
 use Bc125At::GUI::AboutDialog;
+use Bc125At::GUI::Auto;
 
 BEGIN {
     eval {
@@ -140,6 +141,9 @@ sub _setup_widgets {
             "Check for duplicates",
             sub { $self->_check_for_duplicates }
         ),
+        _button('Auto scan/search', sub {
+my $as = Bc125At::GUI::Auto->new($self);
+}),
         _button(
             "Quit",
             sub { $self->quit }
@@ -401,7 +405,24 @@ sub spare_time {
     if ($t > ($self->{last_device_check} || 0) ){
         $self->{last_device_check} = $t;
         $self->device_check;
+        my $actions = $self->{spare_time_actions};
+        if (ref $actions eq 'HASH'){
+            for (values %$actions){
+                ref $_ eq 'CODE' or die;
+                $_->();
+            }
+        }
     }
+}
+
+sub add_spare_time_action {
+    my ($self, $name, $sub) = @_;
+    $self->{spare_time_actions}{$name} = $sub;
+}
+
+sub rm_spare_time_action {
+    my ($self, $name) = @_;
+    delete $self->{spare_time_actions}{$name};
 }
 
 sub quit { Gtk2->main_quit };
