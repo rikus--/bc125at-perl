@@ -41,11 +41,22 @@ sub _setup_widgets {
     $hbox->add(Bc125At::GUI::_button("auto scan", sub { $self->auto_scan } ));
     $hbox->add(Bc125At::GUI::_button("stop", sub { $self->stop } ));
     $hbox->set_size_request(400,25);
+    my $hbox2 = Gtk2::HBox->new;
+    $self->{dpbthreshold} = Gtk2::Entry->new();
+    $self->{dpbthreshold}->set_text('1.25');
+    $hbox2->add(Gtk2::Label->new("dpb threshold (min 0.0, max 127.0):"));
+    $hbox2->add($self->{dpbthreshold});
     my $status = Gtk2::Label->new();
     $vbox->add($hbox);
+    $vbox->add($hbox2);
     $vbox->add($status);
     $self->{status} = $status;
     $self->{window}->add($vbox);
+}
+
+sub get_dpb_threshold {
+    my $self = shift;
+    return $self->{dpbthreshold}->get_text();
 }
 
 sub auto_scan {
@@ -81,7 +92,7 @@ sub auto_scan_iteration {
 
     my $dpb = Bc125At::Heuristics::judge($data);
     my $report = [$t, $self->get_channel, $dpb];
-    push @{$self->{history}}, $report if $dpb > 0.1;
+    push @{$self->{history}}, $report if $dpb > $self->get_dpb_threshold();
 
 # lazy sloppy output until I decide what kind of interface to add for this
 use Data::Dumper;
