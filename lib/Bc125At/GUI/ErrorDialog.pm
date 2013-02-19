@@ -22,12 +22,13 @@ package Bc125At::GUI::ErrorDialog;
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-use strict;
-use warnings;
-
 use Gtk2;
 
-use base 'Gtk2::Dialog';
+use base 'Gtk2::Dialog', 'Exporter';
+@EXPORT_OK = ('do_or_alert');
+
+use strict;
+use warnings;
 
 sub new {
     my ($package, $title, $content, $parent) = @_;
@@ -52,6 +53,16 @@ sub main {
     $self->show;
     $self->run;
     $self->destroy;
+}
+
+sub do_or_alert(&$;$){
+    my ($sub, $title) = @_;
+    my $ret = eval { &$sub };
+    if ($@){
+        Bc125At::GUI::ErrorDialog->new($title, $@)->main;
+        return;
+    }
+    return $ret;
 }
 
 1;

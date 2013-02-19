@@ -28,7 +28,7 @@ use warnings;
 use Bc125At::Detect;
 use Bc125At::Command;
 use Bc125At::GUI::ProgressWindow;
-use Bc125At::GUI::ErrorDialog;
+use Bc125At::GUI::ErrorDialog 'do_or_alert';
 use Bc125At::GUI::AboutDialog;
 use Bc125At::GUI::Auto;
 
@@ -451,16 +451,6 @@ sub device_check {
        $self->{connected} = 0;
        $self->status('No device detected');
    }
-}
-
-sub do_or_alert(&$;$){
-    my ($sub, $title) = @_;
-    my $ret = eval { &$sub };
-    if ($@){
-        Bc125At::GUI::ErrorDialog->new($title, $@)->main;
-        return;
-    }
-    return $ret;
 }
 
 1;

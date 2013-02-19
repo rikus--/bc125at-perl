@@ -16,10 +16,14 @@ postprocessed in order to construct a list of interesting channels.
 
 =cut
 
-use Bc125At::Heuristics;
 BEGIN { die if !$INC{'Bc125At/GUI.pm'} }
+use Bc125At::Heuristics;
+use Bc125At::GUI::ErrorDialog 'do_or_alert';
 
 use Gtk2;
+
+use strict;
+use warnings;
 
 sub new {
      my ($package, $gui) = @_;
@@ -61,7 +65,11 @@ sub get_dpb_threshold {
 
 sub auto_scan {
     my $self = shift;
-    my $info = $self->{gui}->harvest_table();
+    my $info;
+    do_or_alert {
+        $info = $self->{gui}->harvest_table();
+        die "Please load channels from scanner before running auto scan\n" if !$info->[0]{frq};
+    } "Problem";
 
     $self->{info} = $info;
     #$self->{gui}->add_spare_time_action('autoscan', sub { $self->auto_scan_iteration() }); # works but results in slow scanning
@@ -110,7 +118,13 @@ sub set_channel {
     return if $freq == 0;
     my $name = $self->{info}[$ch - 1]{name} || '';
     my $found = @{$self->{history} || []};
-    $self->{gui}{scanner}->jump_to_channel($ch);
+
+    # avoid alert box here in order to allow recovery during unattended operation
+    eval {
+        $self->{gui}{scanner}->jump_to_channel($ch);
+    };
+    my $err = $@;
+
     $self->set_status(
 <<END
 <b>
@@ -125,8 +139,13 @@ $found hits so far
 ---------------------------
 </span>
 </b>
+$err
 END
 );
+    if ($err){
+        select undef, undef, undef, 0.4; # avoid looping too fast on failure
+        return;
+    }
     return 1;
 }
 
@@ -160,7 +179,7 @@ sub stop {
 }
 
 sub auto_search {
-    die "Not implemented yet"
+    do_or_alert { die "Not implemented yet\n" } "Oops";
 }
 
 1;
