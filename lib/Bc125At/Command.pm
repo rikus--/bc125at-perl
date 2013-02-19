@@ -401,4 +401,13 @@ sub jump_to_channel {
     $self->run_cmds(\@cmds);
 }
 
+sub jump_to_frequency {
+    my ($self, $channel) = @_;
+    my @channel_keys = split //, $channel;
+    my @cmds = map {
+        join(',', 'KEY', $_, 'P')
+    } 'R', 'H', @channel_keys, 'H';
+    $self->run_cmds(\@cmds);
+}
+
 1;
