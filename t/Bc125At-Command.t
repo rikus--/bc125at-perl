@@ -6,7 +6,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 42;
+use Test::More tests => 44;
+
+use FindBin;
+
+unshift @INC, "$FindBin::Bin/../lib";
 
 use Bc125At::Command;
 
@@ -72,3 +76,36 @@ for ('00285750', '0028.5750', '0028.575', '028.5750', '028.575', '28.5750', '28.
     my $massaged = Bc125At::Command::_massage(_generate_input($_));
     is_deeply $massaged, _generate_input('00285750'), "massage: $_ -> 00285750";
 }
+
+is_deeply Bc125At::Command::_empty_rowinfo(), 
+{
+        cmd       => 'CIN',
+        index     => undef,
+        name      => ' ' x 16,
+        frq       => '000.000',
+        mod       => 'AUTO',
+        ctcss_dcs => '0',
+        dly       => '2',
+        lout      => '1',
+        pri       => '0',
+},
+"Basic empty rowinfo was as expected";
+
+is_deeply Bc125At::Command::_empty_rowinfo(
+    frq => '125.875',
+    lout => '0',
+    name => 'Foo',
+    index => 37,
+),
+{
+        cmd       => 'CIN',
+        index     => 37,
+        name      => 'Foo',
+        frq       => '125.875',
+        mod       => 'AUTO',
+        ctcss_dcs => '0',
+        dly       => '2',
+        lout      => '0',
+        pri       => '0',
+},
+"Adjusted empty rowinfo was as expected";
