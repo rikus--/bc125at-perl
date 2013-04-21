@@ -378,18 +378,38 @@ sub _max {
 }
 
 sub _empty_rowinfo {
-    my $index = shift || die;
+    my @args = @_;
     return {
         cmd       => 'CIN',
-        index     => $index,
+        index     => undef,
         name      => ' ' x 16,
         frq       => '000.000',
-        mod       => 'NFM',
+        mod       => 'AUTO',
         ctcss_dcs => '0',
         dly       => '2',
         lout      => '1',
         pri       => '0',
+        @args
     };
+}
+
+sub load_channels {
+    my $file = shift;
+    open my $fh, '<', $file;
+    chomp(my $firstline = <$fh>);
+    if ($firstline =~ /^\[$/){
+        close $fh;
+        return undumper($file);
+    }
+    elsif($firstline =~ /^\d+\.\d+$/){
+        my @info = (_empty_rowinfo('index' => 1, frq => $firstline, lout => 0));
+        for(my $index = 2; $index <= 500 && chomp(my $line = <$fh>); $index++){
+            die "whoops, wasn't expecting that: $line\n" if $line !~ /^\d+\.\d+$/;
+            push @info, _empty_rowinfo('index' => $index, frq => $line, lout => 0);
+        }
+        die "too much!\n" if @info > 500;
+        return \@info;
+    }
 }
 
 sub jump_to_channel {

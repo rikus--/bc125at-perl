@@ -123,7 +123,7 @@ sub _setup_widgets {
             "Load file...",
             sub {
                 my $filename = $self->_load_dialog() || return;
-                my $info = do_or_alert { Bc125At::Command::undumper($filename) } 'Problem loading file';
+                my $info = do_or_alert { Bc125At::Command::load_channels($filename) } 'Problem loading file';
                 $self->populate_table($info);
                 print "Loaded channels from $filename\n";
             }
@@ -370,7 +370,7 @@ sub _check_for_duplicates {
         sub {
             for (sort { $b <=> $a } map { $_->[0] } @dups) {    # splice backwards from end so as not to disrupt known dup offsets
                 splice @$info, $_ - 1, 1;
-                push @$info, Bc125At::Command::_empty_rowinfo(500);
+                push @$info, Bc125At::Command::_empty_rowinfo('index' => 500);
 
             }
             @$info == 500 or die;
