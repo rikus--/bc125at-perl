@@ -338,7 +338,7 @@ sub _human_freq {
 
 sub _nonhuman_freq {
     my $freq = shift;
-    if ($freq =~ /^\d+\.\d+$/) {
+    if (_is_human($freq)){
         return sprintf "%08d", $freq * 10_000;
     }
     die "input '$freq' was not as expected";
@@ -365,12 +365,14 @@ sub _massage {
         if ($k eq 'name' && !$massaged->{$k}) {
             $massaged->{$k} = ' ' x 16;    # some amount of whitespace is apparently required to erase existing channel names
         }
-        if ($k =~ m{^frq} && $massaged->{$k} =~ /\./) {
+        if ($k =~ m{^frq} && _is_human($massaged->{$k})){
             $massaged->{$k} = _nonhuman_freq($massaged->{$k});
         }
     }
     return $massaged;
 }
+
+sub _is_human { $_[0] =~ /^\d+\.\d+$/ or $_[0] =~ /^\d{1,4}$/ }
 
 sub _max {
     my ($x, $y) = @_;
