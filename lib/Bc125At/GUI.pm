@@ -440,7 +440,7 @@ sub device_check {
    my $self = shift;
    my ($devinfo, $product, $vendor) = Bc125At::Detect::detect();
    if ($devinfo){
-       my ($bus_n, $dev_n) = $devinfo =~ /Bus=\s*(\d+).*?Dev#=\s*(\d+)/;
+       my ($bus_n, $dev_n) = $devinfo =~ /Bus\s*(\d+).*?Device\s*(\d+)/;
        $self->status(sprintf 'BC125AT connected at bus %s device %s', $bus_n // '?', $dev_n // '?');
        if (!$self->{connected}){
            $self->reload;

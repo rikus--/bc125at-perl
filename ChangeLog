@@ -1,3 +1,6 @@
+2014-__-__
+- Improve USB device detection (wasn't working on Fedora)
+
 2012-02-10 
 - Version 0.5.2
 - Auto-load driver when device is plugged in (GUI)
