@@ -39,17 +39,11 @@ sub setup_driver {
     else {
         my ($devinfo, $vendor_hex, $product_hex) = detect();
         return if !$devinfo;
-        system "rmmod usbserial >/dev/null 2>&1";
-        system "modprobe usbserial vendor=$vendor_hex product=$product_hex" and die;
-        system "mknod /dev/ttyUSB0 c 188 0" if !-e "/dev/ttyUSB0";
+
+        # Fix for https://github.com/rikus--/bc125at-perl/issues/1
+        system "echo 1965 0017 2 076d 0006 > /sys/bus/usb/drivers/cdc_acm/new_id";
     }
     print "Done setting up driver. Hope it works.\n";
 }
-
-#sub probe {
-#    for my $tty (qw(/dev/ttyUSB0 /dev/ttyUSB1)){
-#        #Bc125At::Serial->new(
-#    }
-#}
 
 1;

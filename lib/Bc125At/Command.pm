@@ -58,7 +58,7 @@ If you haven't already, try running
 
 (must be done as root)
 
-Also, make sure the device in /dev (likely /dev/ttyUSB0) is
+Also, make sure the device in /dev (likely /dev/ttyACM0) is
 readable/writable by the user you are running bc125at-perl as.
 
 END

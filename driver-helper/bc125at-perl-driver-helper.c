@@ -89,7 +89,6 @@ void extract_value(char *linebuf, char *match, char *result){
 }
 
 int setup_device(char *vendor, char *product){
-    char cmd[256];
     uid_t orig_uid, orig_gid;
     
     orig_uid = getuid();
@@ -102,15 +101,9 @@ int setup_device(char *vendor, char *product){
         return 1;
     }
     else {
-        system("/sbin/rmmod usbserial >/dev/null 2>&1");
-        snprintf(cmd, 256, "/sbin/modprobe usbserial vendor=0x%s product=0x%s", vendor, product);
-        if (system(cmd) != 0){
-            printf("loading driver failed\n");
-            return 1;
-        }
-        system("/bin/mknod /dev/ttyUSB0 c 188 0 2>/dev/null");
+        system("echo 1965 0017 2 076d 0006 > /sys/bus/usb/drivers/cdc_acm/new_id");
         usleep(250 * 1000); /* sleep 250 ms before chown or, oddly, it may not take effect */
-        if (chown("/dev/ttyUSB0", orig_uid, orig_gid) == -1)
+        if (chown("/dev/ttyACM0", orig_uid, orig_gid) == -1)
             perror("chown failed");
     }
     return 0;

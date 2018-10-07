@@ -48,7 +48,7 @@ if ($@) {
     warn "Device::SerialPort is not available... falling back to basic I/O.\n";
 }
 
-my $DEFAULT_TTY = '/dev/ttyUSB0';
+my $DEFAULT_TTY = '/dev/ttyACM0';
 
 sub new {
     my ($package, $tty) = @_;

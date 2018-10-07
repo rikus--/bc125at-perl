@@ -142,15 +142,15 @@ things done.
 =head1 GETTING STARTED
 
 Connect the scanner using the USB cable. In order to get the
-/dev/ttyUSB0 device set up, run as root:
+/dev/ttyACM0 device set up, run as root:
 
    bc125at-perl driver
 
-If this succeeds, you should now have a /dev/ttyUSB0 device
+If this succeeds, you should now have a /dev/ttyACM0 device
 that is set up to point to the correct USB device and emulate
 a traditional serial port, allowing the commands below to be used.
 If you want to run bc125at-perl as a non-root user, you will need
-to manually adjust the permissions of /dev/ttyUSB0 to be readable
+to manually adjust the permissions of /dev/ttyACM0 to be readable
 and writable by the user you want to use.
 
 =head1 COMMANDS
