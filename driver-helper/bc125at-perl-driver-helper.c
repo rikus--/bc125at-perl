@@ -24,6 +24,8 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* Lines 51-54 Copywright (c) 2022 Max Loiacono, MIT License */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,9 +48,10 @@ int main (int argc, char *argv[]){
     product[0]   = 0;
     found_device = 0;
     
-    if( ! (usbdev = fopen("/proc/bus/usb/devices", "r")) ){
-        return 1;
-    }
+    /* Find the correct usb list file */
+    if( (usbdev = fopen("/proc/bus/usb/devices", "r")) ){}
+    else if ( (usbdev = fopen("/sys/kernel/debug/usb/devices", "r")) ) {}
+    else { return 1; }
 
     while( fgets(linebuf, LINEBUF_MAX, usbdev) ){
         if(strstr(linebuf, "BC125AT")){
